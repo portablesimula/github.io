@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>Setup Properties</comment>
+<entry key="simula.version">Simula-Beta-0.3</entry>
+<entry key="simula.revision">1</entry>
+</properties>
