@@ -3,5 +3,6 @@
 <properties>
 <comment>Setup Properties</comment>
 <entry key="simula.version">Simula-Beta-0.3</entry>
-<entry key="simula.revision">1</entry>
+<entry key="simula.setup.dated">Mon Jan 21 11:07:36 CET 2019</entry>
+<entry key="simula.revision">41</entry>
 </properties>
