@@ -2,7 +2,7 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 <comment>Setup Properties</comment>
-<entry key="simula.version">Simula-Beta-0.3</entry>
-<entry key="simula.setup.dated">Thu May 16 20:29:26 CEST 2019</entry>
-<entry key="simula.revision">36</entry>
+<entry key="simula.version">Simula-1.0</entry>
+<entry key="simula.setup.dated">Sat May 18 12:35:18 CEST 2019</entry>
+<entry key="simula.revision">1</entry>
 </properties>

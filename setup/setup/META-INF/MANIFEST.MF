@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Simula-Setup-Dated: Sat May 18 10:04:26 CEST 2019
+Simula-Revision: 37
+Created-By: 1.8.0_11 (Oracle Corporation)
+Main-Class: make.setup.SimulaExtractor
+
