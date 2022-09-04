@@ -77,7 +77,7 @@ Dårlig feilmelding ved ulovlig GOTO.
 
 Analyse: Label quant inneholder for lite informasjon.
 
-Tiltak: Utvid LABQNT$ med identifier og linje-nummer.
+Tiltak: Utvid _LABQNT med identifier og linje-nummer.
 
 ===============================================================================
 
