@@ -3,6 +3,6 @@
 <properties>
 <comment>Setup Properties</comment>
 <entry key="simula.version">Simula-2.0</entry>
-<entry key="simula.revision">7</entry>
-<entry key="simula.setup.dated">Sun Sep 04 10:16:30 CEST 2022</entry>
+<entry key="simula.revision">8</entry>
+<entry key="simula.setup.dated">Sun Nov 13 10:44:59 CET 2022</entry>
 </properties>
