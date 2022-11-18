@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
-<properties>
-<comment>Setup Properties</comment>
-<entry key="simula.version">Simula-2.0</entry>
-<entry key="simula.revision">8</entry>
-<entry key="simula.setup.dated">Thu Nov 17 11:38:36 CET 2022</entry>
-</properties>
