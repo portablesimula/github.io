@@ -1,0 +1,377 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="../includes/standard.css">
+<title>Chapter 12: Class Simulation</title>
+</head>
+<body>
+<h1>Chapter 12<br>
+CLASS SIMULATION</h1>
+
+ <p>The system class "simulation" may be considered an "application package"
+ oriented towards simulation problems. It has the class "simset" as prefix, and
+ set-handling facilities are thus immediately available.
+
+ <p>The concepts defined in "simulation" are explained with respect to a prefixed
+ block, whose prefix part is an instance of the body of "simulation" or of a
+ subclass. The prefixed block instance acts as the head of a quasi-parallel
+ system which may represent a "discrete event" simulation model.
+<pre>
+ simset <b>class</b> simulation;
+        <b>begin</b>  <b>ref</b> (head) SQS;
+      link <b>class</b> EVENT_NOTICE (EVTIME, PROC);
+                     <b>long</b> <b>real</b> EVTIME; <b>ref</b> (process) PROC;
+           <b>begin</b>
+              <b>ref</b> (EVENT_NOTICE) <b>procedure</b> suc;
+                 suc:- <b>if</b> SUC <b>is</b> EVENT_NOTICE <b>then</b> SUC <b>else</b> <b>none</b>;
+
+              <b>ref</b> (EVENT_NOTICE) <b>procedure</b> pred;   pred:- PRED;
+
+              <b>procedure</b> RANK_IN_SQS (afore); <b>Boolean</b> afore;
+              <b>begin</b> <b>ref</b> (EVENT_NOTICE) evt;
+                 evt:- SQS.last;
+                 <b>while</b> evt.EVTIME &gt; EVTIME <b>do</b>    evt :- evt.pred;
+                 <b>if</b> afore <b>then</b>
+                    <b>while</b> evt.EVTIME = EVTIME <b>do</b> evt :- evt.pred;
+                 follow(evt)
+              <b>end</b> RANK_IN_SQS;
+           <b>end</b> EVENT_NOTICE;
+
+           <b>ref</b> (MAIN_PROGRAM) main;
+
+           <b>ref</b> (EVENT_NOTICE) <b>procedure</b> FIRSTEV;  FIRSTEV :- SQS.first;
+           <b>ref</b> (process) <b>procedure</b> current; current :- FIRSTEV.PROC;
+           <b>long</b> <b>real</b> <b>procedure</b> time; time := FIRSTEV.EVTIME;
+
+      link <b>class</b> process;  .................... 12.1;
+           <b>procedure</b> ACTIVAT .................. 12.3;
+           <b>procedure</b> hold ..................... 12.4;
+           <b>procedure</b> passivate ................ 12.4;
+           <b>procedure</b> wait ..................... 12.4;
+           <b>procedure</b> cancel ................... 12.4;
+   process <b>class</b> MAIN_PROGRAM ................. 12.5;
+           <b>procedure</b> accum .................... 12.6;
+
+           SQS        :- <b>new</b> head;
+           main       :- <b>new</b> MAIN_PROGRAM;
+           main.EVENT :- <b>new</b> EVENT_NOTICE(0,main);
+           main.EVENT.into(SQS)
+        <b>end</b> simulation;
+</pre>
+ <p>When used as a prefix to a block or a class, "simulation" introduces
+ simulation-oriented features through the class "process" and associated
+ procedures.
+
+ <p>The variable SQS refers to a set which is called the "sequencing set", and
+ serves to represent the system time axis. The members of the sequencing set are
+ event notices ranked according to increasing value of the attribute "EVTIME".
+ An event notice refers through its attribute PROC to a "process" object and
+ represents an event which is the next active phase of that object, scheduled to
+ take place at system time EVTIME. There may be at most one event notice
+ referencing any given process object.
+
+ <p>The event notice at the lower end of the sequencing set refers to the
+ currently active process object. The object can be referenced through the
+ procedure "current". The value of EVTIME for this event notice is identified as
+ the current value of system time. It may be accessed through the procedure
+ "time".
+
+ <p><b>Note</b>: Since the statements and procedures introduced by "simulation" make
+       implicit use of the sequencing procedures (detach, call and resume)
+       explicit sequencing by these procedures should be done with care.
+
+
+<h2>Class "process"</h2>
+<pre>
+ link <b>class</b> process;
+      <b>begin</b> <b>ref</b> (EVENT_NOTICE) EVENT;
+         <b>Boolean</b> TERMINATED;
+         <b>Boolean</b> <b>procedure</b> idle;              idle := EVENT==<b>none</b>;
+         <b>Boolean</b> <b>procedure</b> terminated;  terminated := TERMINATED;
+
+         <b>long</b> <b>real</b> <b>procedure</b> evtime;
+            <b>if</b> idle <b>then</b>  error(&quot;...&quot; ! No Evtime for idle process)
+            <b>else</b> evtime := EVENT.EVTIME;
+
+         <b>ref</b> (process) <b>procedure</b> nextev;
+            nextev :- <b>if</b>  idle <b>or</b> <b>else</b> EVENT.suc == <b>none</b> <b>then</b> <b>none</b>
+                     <b>else</b> EVENT.suc.PROC;
+
+         detach;
+         <b>inner</b>;
+         TERMINATED:= <b>true</b>;
+         passivate;
+         error(&quot;...&quot; ! Terminated process;)
+      <b>end</b> process;
+</pre>
+ <p>An object of a class prefixed by "process" is called a process object. A
+ process object has the properties of "link" and, in addition, the capability to
+ be represented in the sequencing set and to be manipulated by certain
+ sequencing statements which may modify its "process state". The possible
+ process states are: active, suspended, passive and terminated.
+
+ <p>When a process object is generated it immediately becomes detached and its
+ reactivation point positioned in front of the first statement of its user-
+ defined operation rule. The process object remains detached throughout its
+ dynamic scope.
+
+ <p>The procedure "idle" has the value <b>true</b> if the process object is not
+ currently represented in the sequencing set. It is said to be in the passive
+ or terminated state depending on the value of the procedure "terminated". An
+ idle process object is passive if its reactivation point is at a user-defined
+ prefix level. If and when the PSC passes through the final <b>end</b> of the
+ user-defined part of the body, it proceeds to the final operations at the
+ prefix level of the class "process", and the value of the procedure
+ "terminated" becomes <b>true</b>. (Although the process state "terminated" is not
+ strictly equivalent to the corresponding basic concept defined in chapter 7,
+ an implementation may treat a terminated process object as terminated in the
+ strict sense). A process object currently represented in the sequencing set is
+ said to be "suspended", unless it is represented by the event notice at the
+ lower end of the sequencing set. In the latter case it is active. A suspended
+ process is scheduled to become active at the system time indicated by the
+ attribute EVTIME of its event notice. This time value may be accessed through
+ the procedure "evtime". The procedure "nextev" references the process object,
+ if any, represented by the next event notice in the sequencing set.
+
+<h2>Activation statement</h2>
+<pre>
+     activation-statement
+         =  activation-clause  [ scheduling-clause ]
+
+     activation-clause
+         =  activator  object-expression
+
+     activator
+         =  <b>activate</b>
+         |  <b>reactivate</b>
+
+     scheduling-clause
+         =  timing-clause
+         |  ( <b>before</b>  |  <b>after</b> )  object-expression
+
+     timing-clause
+         =  simple-timing-clause  [ <b>prior</b> ]
+
+     simple-timing-clause
+         =  ( <b>at</b>  |  <b>delay</b> )  arithmetic-expression
+</pre>
+ <p>An activation statement is only valid within an object of a class included in
+ "simulation", or within a prefixed block whose prefix part is such an object.
+
+ <p>The effect of an activation statement is defined as being that of a call on the
+ sequencing procedure ACTIVAT local to "simulation", see 12.3.
+
+ <p>The actual parameter list is determined from the form of the activation
+ statement, by the following rules:
+<ol>
+<li>The actual parameter corresponding to REAC is <b>true</b> if the activator
+         is <b>reactivate</b>, <b>false</b> otherwise.
+
+<li>The actual parameter corresponding to X is the object expression of
+         the activation clause.
+
+<li>The actual parameter corresponding to T is the arithmetic expression
+         of the simple timing clause if present, otherwise it is zero.
+
+<li>The actual parameter corresponding to PRIO is <b>true</b> if <b>prior</b> is in
+         the timing clause, <b>false</b> if it is not used or there is no timing
+         clause.
+
+<li>The actual parameter corresponding to Y is the object expression
+         of the scheduling clause if present, otherwise it is <b>none</b>.
+
+<li>The actual parameter corresponding to CODE is defined
+         from the scheduling clause as follows:
+</ol>
+<pre>
+                 scheduling clause             actual text parameter
+               -------------------------------------------------------
+                 - absent -                    &quot;direct&quot;
+                 <b>at</b> arithmetic expression      <b>at</b>
+                 <b>delay</b> arithmetic expression   <b>delay</b>
+                 <b>before</b> object expression      <b>before</b>
+                 <b>after</b> object expression       <b>after</b>
+</pre>
+<h2>Procedure ACTIVAT</h2>
+<pre>
+     <b>procedure</b> ACTIVAT(REAC, X, CODE, T, Y, PRIO);
+        <b>value</b> CODE; <b>ref</b> (process) X, Y; <b>Boolean</b> REAC, PRIO;
+         <b>text</b> CODE; <b>long</b> <b>real</b> T;
+     <b>inspect</b> X <b>do</b> <b>if</b> <b>not</b> TERMINATED <b>then</b>
+     <b>begin</b>  <b>ref</b> (process) z; <b>ref</b> (EVENT_NOTICE) EV;
+         <b>if</b> REAC <b>then</b> EV:- EVENT
+         <b>else</b> <b>if</b> EVENT =/= <b>none</b> <b>then</b> <b>goto</b> exit;
+         z:- current;
+         <b>if</b>      CODE = &quot;direct&quot; <b>then</b>
+ direct:     <b>begin</b> EVENT:- <b>new</b> EVENT_NOTICE(time,X);
+                   EVENT.precede(FIRSTEV)                        <b>end</b> direct
+         <b>else</b> <b>if</b> CODE = <b>delay</b> <b>then</b>
+             <b>begin</b> T:= T + time;
+                   <b>goto</b> at_                                      <b>end</b> delay
+         <b>else</b> <b>if</b> CODE = <b>at</b> <b>then</b>
+ at_:        <b>begin</b> <b>if</b> T &lt; time <b>then</b> T:= time;
+                  <b>if</b> T = time <b>and</b> PRIO <b>then</b> <b>goto</b> direct;
+                     EVENT:- <b>new</b> EVENT_NOTICE(T, X);
+                     EVENT.RANK_IN_SQS(PRIO)                     <b>end</b> at
+
+         <b>else</b> <b>if</b> Y == <b>none</b> <b>or</b> <b>else</b> Y.EVENT == <b>none</b>
+         <b>then</b> EVENT :- <b>none</b>
+         <b>else</b> <b>begin</b>
+            <b>if</b> X == Y <b>then</b> <b>goto</b> exit;
+                 <b>comment</b> reactivate X before/after X;
+            EVENT:- <b>new</b> EVENT_NOTICE(Y.EVENT.EVTIME, X);
+            <b>if</b> CODE = <b>before</b> <b>then</b> EVENT.precede(Y.EVENT)
+                               <b>else</b> EVENT.follow(Y.EVENT)
+         <b>end</b> before or after;
+         <b>if</b> EV =/= <b>none</b>
+         <b>then</b> <b>begin</b> EV.out; <b>if</b> SQS.empty <b>then</b> error(&quot;...&quot;) <b>end</b>;
+         <b>if</b> z =/= current <b>then</b> resume(current);
+   exit:
+     <b>end</b> ACTIVAT;
+</pre>
+ <p>The procedure ACTIVAT represents an activation statement, as described in 12.2.
+ The effects of a call on the procedure are described in terms of the
+ corresponding activation statement. The purpose of an activation statement is
+ to schedule an active phase of a process object.
+
+ <p>Let X be the value of the object expression of the activation clause. If the
+ activator is <b>activate</b> the statement has no effect (beyond that of evaluating
+ its constituent expressions) unless the X is a passive process object. If the
+ activator is <b>reactivate</b> and X is a suspended or active process object, the
+ corresponding event notice is deleted (after the subsequent scheduling
+ operation) and, in the latter case, the current active phase is terminated. The
+ statement otherwise operates as an <b>activate</b> statement.
+
+ <p>The scheduling takes place by generating an event notice for X and inserting it
+ into the sequencing set. The type of scheduling is determined by the scheduling
+ clause.
+
+ <p>An empty scheduling clause indicates direct activation, whereby an active phase
+ of X is initiated immediately. The event notice is inserted in front of the one
+ currently at the lower end of the sequencing set and X becomes active.The
+ system time remains unchanged. The formerly active process object becomes
+ suspended.
+
+ <p>A timing clause may be used to specify the system time of the scheduled active
+ phase. The clause "<b>delay</b> T", where T is an arithmetic expression, is
+ equivalent to "<b>at</b> time + T". The event notice is inserted into the sequencing
+ set using the specified system time as the ranking criterion. It is normally
+ inserted after any event notice with the same system time. The symbol "<b>prior</b>"
+ may, however, be used to specify insertion in front of any event notice with
+ the same system time.
+
+ <p>Let Y be a reference to an active or suspended process object. Then the clause
+ "<b>before</b> Y" or "<b>after</b> Y" may be used to insert the event notice in a
+ position defined relation to (before or after) the event notice of Y. The
+ generated event notice is given the same system time as that of Y. If Y is not
+ an active or suspended process object, no scheduling takes place.
+
+ <p><b>Example</b>
+
+ <p>The statements
+<pre>
+                 <b>activate</b> X
+                 <b>activate</b> X <b>before</b> current
+                 <b>activate</b> X <b>delay</b> 0 <b>prior</b>
+                 <b>activate</b> X <b>at</b> time <b>prior</b>
+</pre>
+ <p>are equivalent. They all specify direct activation.
+
+ <p>The statement
+<pre>
+                 <b>reactivate</b> current <b>delay</b> T
+</pre>
+ <p>is equivalent to "hold(T)".
+<h2>Sequencing procedures</h2>
+<pre>
+ HOLD      <b>procedure</b> hold(T); <b>long</b> <b>real</b> T;
+           <b>inspect</b> FIRSTEV <b>do</b> <b>begin</b>
+              <b>if</b> T &gt; 0 <b>then</b> EVTIME:= EVTIME + T;
+              <b>if</b> suc =/= <b>none</b> <b>and</b> <b>then</b> suc.EVTIME &lt;= EVTIME
+              <b>then</b> <b>begin</b> out; RANK_IN_SQS(<b>false</b>);
+                 resume(current)
+              <b>end</b> if
+           <b>end</b> hold;
+
+
+ PASSIVATE <b>procedure</b> passivate;
+           <b>begin</b>
+              <b>inspect</b> current <b>do</b> <b>begin</b>  EVENT.out; EVENT :- <b>none</b>  <b>end</b>;
+              <b>if</b> SQS.empty <b>then</b> error(&quot;...&quot;) <b>else</b> resume(current)
+           <b>end</b> passivate;
+
+
+ WAIT      <b>procedure</b> wait(S); <b>ref</b> (head) S;
+           <b>begin</b> current.into(S); passivate <b>end</b> wait;
+
+
+ CANCEL    <b>procedure</b> cancel(X); <b>ref</b> (process) X;
+           <b>if</b> X == current <b>then</b> passivate
+           <b>else</b> <b>inspect</b> X <b>do</b>
+              <b>if</b> EVENT =/= <b>none</b>
+              <b>then</b> <b>begin</b>  EVENT.out;  EVENT :- <b>none</b>
+           <b>end</b> cancel;
+</pre>
+ <p>The sequencing procedures serve to organize the quasi-parallel operation of
+ process objects in a simulation model. Explicit use of the basic sequencing
+ facilities (call, detach, resume) should be made only after thorough
+ consideration of its effects.
+
+ <p>The statement "hold(T)", where T is a long real number greater than or equal to
+ zero, halts the active phase of the currently active process object, and
+ schedules its next active phase at the system time "time + T". The statement
+ thus represents an inactive period of duration T. During the inactive period
+ the reactivation point is positioned within the "hold" statement. The process
+ object becomes suspended.
+
+ <p>The statement "passivate" stops the active phase of the currently active
+ process object and deletes its event notice. The process object becomes
+ passive. Its next active phase must be scheduled from outside the process
+ object. The statement thus represents an inactive period of indefinite
+ duration. The reactivation point of the process object is positioned within the
+ "passivate" statement.
+
+ <p>The procedure "wait" includes the currently active process object in a
+ referenced set, and then calls the procedure "passivate".
+
+ <p>The statement "cancel(X)", where X is a reference to a process object, deletes
+ the corresponding event notice, if any. If the process object is currently
+ active or suspended, it becomes passive. Otherwise, the statement has no
+ effect. The statement "cancel(current)" is equivalent to "passivate".
+
+<h2>The main (simulation) program</h2>
+<pre>
+     process <b>class</b> MAIN_PROGRAM;
+             <b>begin</b>
+                <b>while</b> <b>true</b> <b>do</b> detach
+             <b>end</b> MAIN PROGRAM;
+</pre>
+ <p>It is desirable that the main component of a simulation model, i.e. the
+ "simulation" block instance, should respond to the sequencing procedures of
+ 12.4 as if it were itself a process object. This is accomplished by having a
+ process object of the class MAIN_PROGRAM as a permanent component of the
+ quasi-parallel system.
+
+ <p>The process object represents the main component with respect to the
+ sequencing procedures. Whenever it becomes operative, the PSC (and OSC)
+ immediately enter the main component as a result of the "detach" statement (cf.
+ 7.3.1). The procedure "current" references this process object whenever the
+ main component is active.
+
+ <p>A simulation model is initialized by generating the MAIN_PROGRAM object and
+ scheduling an active phase for it at system time zero. Then the PSC proceeds to
+ the first user-defined statement of the "simulation" block.
+
+<h2>The procedure "accum"</h2>
+<pre>
+ ACCUM     <b>procedure</b> accum (a,b,c,d);  <b>name</b> a,b,c;  <b>long</b> <b>real</b> a,b,c,d;
+           <b>begin</b>
+              a:= a+c * (time-b);  b:= time;  c:= c + d
+           <b>end</b> accum;
+</pre>
+ <p>A statement of the form "accum (A,B,C,D)" may be used to accumulate the "system
+ time integral" of the variable C, interpreted as a step function of system
+ time. The integral is accumulated in the variable A. The variable B contains
+ the system time at which the variables were last updated. The value of D is the
+ current increment of the step function.
+</body>
+</html>

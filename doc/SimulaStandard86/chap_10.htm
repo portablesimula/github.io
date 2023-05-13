@@ -1,0 +1,1378 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="../includes/standard.css">
+<title>Chapter 10: Input-Output</title>
+</head>
+<body>
+<h1>Chapter 10<br>
+INPUT-OUTPUT</h1>
+ <p>The semantics of SIMULA I/O facilities rely on the intuitive notion of "files"
+ ("data sets"), i.e. collections of data external to the the program, organized
+ for sequential or random access. In the language, sequential access files are
+ called "sequential files" and random access files "direct files". When it is
+ necessary to distinguish between the file concept of the language and the
+ underlying files of the environment the latter are called <u>external files</u>.
+
+ <p>Actually a file may in practice be any kind of external device with
+ communication capabilities, such as a terminal, a sensory device, etc.
+
+ <p>Examples of sequential files are:
+<ul>
+<li>a series of printed lines
+<li>input from a keyboard
+<li>data on a tape.
+</ul>
+ <p>An example of a direct file is a collection of data items on a disk, with each
+ item identified by a unique integer.
+
+ <p>The standard I/O facilities are contained by a <b>class</b> called "BASICIO". They
+ are available to the program through block prefixing as described below.
+
+ <p><b>Note</b>: The use of upper case letters indicates that this identifier is
+       inaccessible to the user program (cf 1.10).
+
+ <p>The user's main program acts as if it were embedded as follows:
+<pre>
+            BASICIO (inlength, outlength) <b>Note</b>  ! prefixed block;
+                          <b>inspect</b> SYSIN <b>do</b>
+                          <b>inspect</b> SYSOUT <b>do</b>
+                             <b>begin</b>  &lt;external-head&gt; &lt;program&gt;   <b>end</b>
+            <b>end</b> prefixed block
+</pre>
+ <p>In any program execution the unique instance of this prefixed block constitutes
+ the system head of the outermost quasi-parallel system (see 7.2).
+
+ <p>The values of inlength and outlength are implementation-defined; they
+ normally depend upon the actual device(s) associated with SYSIN and SYSOUT (the
+ standard input and output files).
+
+ <p>SYSIN and SYSOUT may represent the input and output features of an interactive
+ terminal, in which case inlength and outlength are probably equal. In other
+ cases, for example batch runs, SYSIN may represent record-oriented input and
+ SYSOUT may represent line printer oriented output. Typical values of inlength
+ and outlength would then be 80 and 132, resp.
+
+ <p>A program may refer to the corresponding file objects through sysin and sysout
+ respectively. Most attributes of these file objects are directly available as
+ the result of the connection blocks enclosing the program.
+
+ <p><b>Note</b>: Within this chapter the term "file object" refers to an instance of one
+       of the classes "in(byte)file", "out(byte)file" and "direct(byte)file" or
+       of a subclass of one of these.
+
+ <p>The overall organization of "BASICIO" is as follows:
+<pre>
+ ENVIRONMENT <b>class</b> BASICIO (INPUT_LINELENGTH, OUTPUT_LINELENGTH);
+                    <b>integer</b> INPUT_LINELENGTH, OUTPUT_LINELENGTH;
+             <b>begin</b> <b>ref</b> (infile) SYSIN; <b>ref</b> (printfile) SYSOUT;
+                <b>ref</b> (infile)    <b>procedure</b> sysin;   sysin  :- SYSIN;
+                <b>ref</b> (printfile) <b>procedure</b> sysout;  sysout :- SYSOUT;
+
+                <b>procedure</b> terminate_program;
+                <b>begin</b> ... ;  <b>goto</b> STOP  <b>end</b> terminate_program;
+
+                     <b>class</b> file ............................ 10.1 ;
+                file <b>class</b> imagefile ....................... 10.3 ;
+                file <b>class</b> bytefile ........................ 10.8 ;
+           imagefile <b>class</b> infile .......................... 10.4 ;
+           imagefile <b>class</b> outfile ......................... 10.5 ;
+           imagefile <b>class</b> directfile ...................... 10.6 ;
+             outfile <b>class</b> printfile ....................... 10.7 ;
+            bytefile <b>class</b> inbytefile ...................... 10.9 ;
+            bytefile <b>class</b> outbytefile ..................... 10.10 ;
+            bytefile <b>class</b> directbytefile .................. 10.11 ;
+
+                SYSIN  :- <b>new</b> infile(&quot;...&quot;);    ! Implementation-defined
+                SYSOUT :- <b>new</b> printfile(&quot;...&quot;); ! files names;
+                SYSIN.open(blanks(INPUT_LINELENGTH));
+                SYSOUT.open(blanks(OUTPUT_LINELENGTH));
+                <b>inner</b>;
+          STOP: SYSIN.close;
+                SYSOUT.close
+          <b>end</b> BASICIO;
+</pre>
+ <p><b>Note</b>: The files SYSIN and SYSOUT are opened and (if not done explicitly
+       prior to program termination) closed within "BASICIO", i.e. outside
+       the program itself.
+
+ <p>The class file and its predefined subclasses are available at any block level
+ of a program (but see (2) of 5.5.1). An implementation may restrict, in any
+ way, the use of these classes for class or block prefixing. An implementation
+ may provide additional subclasses of <b>class</b> file.
+
+ <p>Within a program, an object of a subclass of file may represent an external
+ file. The effect of several such file objects representing the same external
+ file is implementation-defined.
+
+ <p>The procedure "terminate_program" terminates program execution. It closes
+ SYSIN and SYSOUT. It is implementation-dependent with respect to whether or not
+ other open files are also closed.
+
+<h2>The class file</h2>
+<pre>
+    <b>class</b> file(FILENAME);  <b>value</b> FILENAME;  <b>text</b> FILENAME;
+    <b>begin</b> <b>Boolean</b> OPEN;
+       <b>text</b> <b>procedure</b> filename;  filename :- copy(FILENAME);
+       <b>Boolean</b> <b>procedure</b> isopen; isopen := OPEN;
+       <b>Boolean</b> <b>procedure</b> setaccess(mode);  <b>text</b> mode; ... 10.1.1;
+
+       if FILENAME = <b>notext</b> then error(&quot;...&quot;);
+    <b>end</b> file;
+</pre>
+ <p>"File" is the common prefix class for all input/output classes.
+
+ <p>A file is either open or inaccessible as indicated by the variable "OPEN". The
+ procedure "isopen" returns the current value of "OPEN". A file is initially
+ inaccessible (e.g. closed).
+
+ <p>Each file object has a text attribute FILENAME. This text value must at "open"
+ identify an external file which, through an implementation-defined mechanism,
+ becomes associated with the file object. If the parameter value is <b>notext</b>, a
+ run-time error occurs.
+
+ <p>The procedure "filename" retrieves the value of FILENAME.
+
+<h3>External file access control</h3>
+
+ <p>Certain attributes (not specified in the file outline) control the access to
+ the external file. The values of these attributes are set when the file object
+ is opened or closed, from a set of default values possibly modified by
+ successive calls to the procedure "setaccess".
+
+ <p>The standard attribute modes are SHARED, APPEND, CREATE, READWRITE, BYTESIZE,
+ REWIND and PURGE.
+<pre>
+ SHARED:     If the value is &quot;shared&quot;, the external file may be shared
+             by other programs. The value &quot;noshared&quot; implies that the
+             file must be exclusively assigned to this program.
+
+ APPEND:     If the value is &quot;append&quot;, output to the file is added to
+             the existing contents of the file. The value &quot;noappend&quot; implies
+             for a sequential file that, after &quot;close&quot;, the external file will
+             contain only the output produced while the file was open. The
+             mode is not relevant for in(byte)files. For direct files
+             &quot;append&quot; prohibits output before &quot;lastloc&quot;. For out(byte)files,
+             the value &quot;append&quot; implies that SHARED has the value
+             &quot;noshared&quot;.
+
+ CREATE:     If the value is &quot;create&quot;, the external file associated with
+             FILENAME must not exist at &quot;open&quot; (if it does, &quot;open&quot; returns
+             <b>false</b>); a new file is created by the environment. If the
+             value is &quot;nocreate&quot;, the associated file must exist at &quot;open&quot;.
+             The value &quot;anycreate&quot; implies that if the file does exist at &quot;open&quot;
+             the file is opened, otherwise a new file is created.
+
+ READWRITE:  If the value is &quot;readonly&quot;, output operations cannot be
+             performed. If the value is &quot;writeonly&quot;, input operations cannot
+             be performed. The value &quot;readwrite&quot; enables both input and
+             output. This mode is relevant only for direct files.
+
+ BYTESIZE:   The value of this mode is a positive integer specifying the
+             size of bytes, measured in bits. This mode is relevant only
+             for bytefiles. An implementation may restrict the possible
+             values in any way. If not set explicitly the value is
+             implementation-defined.
+
+ REWIND:     The value &quot;rewind&quot; indicates that some resetting of the
+             external file occurs at &quot;close&quot; (e.g. rewind of a magnetic tape).
+             The value &quot;norewind&quot; implies no such reset.
+
+ PURGE:      The value &quot;purge&quot; implies that the external file may be deleted
+             by the environment when it is closed (in the sense that it
+             becomes inaccessible to further program access). The value
+             &quot;nopurge&quot; implies no such deletion.
+</pre>
+ <p>Additional values and modes may be defined by an implementation.
+
+ <p>The parameter "mode" to procedure "setaccess" contains one of the standard
+ values as given above, namely "shared", "noshared", "append", "noappend",
+ "create", "nocreate", "anycreate", "readonly", "writeonly", "readwrite",
+ "bytesize:X" (where X is a positive integer), "rewind", "norewind", "purge"
+ and "nopurge". It is recommended that implementation-defined parameter values
+ have the percent character % as the first character of the text.
+
+ <p>The parameter "bytesize:0" (zero) specifies the (implementation-defined)
+ default byte size for bytefiles.
+
+ <p>Only one mode may be specified in each "setaccess" call, the case of the
+ individual letters of the parameter being insignificant. Unrecognized modes are
+ ignored and "setaccess" then returns the value <b>false</b>. The value is <b>true</b>
+ otherwise. A specific mode is interpreted either at next "open" or next
+ "close". A mode which is set after "open" or "close" has no effect until the
+ next "close" or "open" respectively.
+
+ <p>The default values of the access modes are given in table 10.1, where "NA"
+ means "not applicable" (i.e. ignored for this file kind) and "*" means that
+ the value is implementation-defined.
+<pre>
+                            Files of kind
+     Mode:           In-       Out-       Direct-     Takes effect at
+
+     SHARED          shared    noshared   noshared        open
+     APPEND            NA      noappend   noappend        open
+     CREATE            NA      anycreate  nocreate        open
+     READWRITE         NA         NA      readwrite       open
+     BYTESIZE:x        *          *          *            open
+     REWIND          norewind  norewind      NA           open,close
+     PURGE           nopurge   nopurge    nopurge         close
+
+          Table 10.1. Default values of file access modes.
+</pre>
+<h3>Open and close</h3>
+
+ <p>Most subclasses of "file" defined in BASICIO contain these procedures.
+
+ <p>Procedure "open" establishes the association with an external file (as
+ identified by FILENAME), checks the access modes and causes corresponding
+ opening actions on the external file. If the external file is closed, it is
+ opened.
+
+ <p>Procedure "close" causes closing actions on the external file, as specified by
+ the access modes. In addition, the association between the file object and the
+ external file is dissolved. If possible, the external file is closed.
+
+ <p>The details of these procedures are subclass- and implementation-defined. All
+ versions conform, however, to the following patterns.
+<pre>
+ OPEN     <b>Boolean</b> <b>procedure</b> open ... ;
+          <b>if</b> <b>not</b> OPEN
+               <b>and</b> ... ! FILENAME association is established;
+               <b>and</b> ... ! access modes compatible with external file;
+               <b>and</b> ... ! external file is opened;
+          <b>then</b> <b>begin</b>
+             ... ; ! implementation-defined and access mode
+                     specified actions on external file, followed by
+                     subclass dependent actions;
+             open := OPEN := <b>true</b>;
+          <b>end</b> open;
+
+
+ CLOSE    <b>Boolean</b> <b>procedure</b> close;
+          <b>if</b> OPEN <b>then</b> <b>begin</b>
+             ... ; ! implementation-defined and access
+                     mode specified actions on external file;
+             ... ; ! subclass dependent actions;
+             OPEN  := <b>false</b>;
+             close := <b>true</b>;
+          <b>end</b> close;
+</pre>
+ <p>These patterns will not be repeated in detail for each subclass; a short
+ comment will serve to remind the reader of these general actions of the
+ procedures.
+
+<h2>Structure of file subclasses</h2>
+
+ <p>There are two predefined subclasses of <b>class</b> file:
+<pre>
+     &quot;imagefile&quot; - image (record) oriented files
+     &quot;bytefile&quot;  - character (stream) oriented files
+</pre>
+ <p>These subclasses each have three subclasses defining the direction of data
+ transfer and the file organisation: input-oriented sequential files (i.e.
+ in(byte)files), output-oriented sequential files (i.e. out(byte)files) and
+ bidirectional direct files (i.e. direct(byte)files).
+
+<pre>
+                            ---------------------------------------
+                           |imagefile subclass | bytefile subclass |
+          -----------------+-------------------+-------------------|
+         |sequential input |    infile         |   inbytefile      |
+         |-----------------+-------------------+-------------------|
+         |sequential output|    outfile        |   outbytefile     |
+         |-----------------+-------------------+-------------------|
+         |direct file      |    directfile     |   directbytefile  |
+          ---------------------------------------------------------
+
+                   Table 10.2. Subclasses of class &quot;file&quot;.
+</pre>
+
+ <p>In addition, a standard subclass for line printer oriented output,
+ outfile <b>class</b> printfile, is defined.
+
+<h3>Procedure "checkpoint"</h3>
+
+ <p>All files producing output (sequential output or direct files) contain a
+ Boolean procedure "checkpoint". The procedure causes the environment to
+ attempt to secure the output produced so far. Depending on the nature of the
+ associated external device, this causes completion of output transfer (i.e.
+ intermediate buffer contents are transferred). If this is not possible or
+ meaningful, "checkpoint" is a dummy operation in which case the value <b>false</b>
+ is returned.
+
+<h3>Direct file locking</h3>
+
+ <p>Direct files contain the following variable and procedures for control of
+ simultaneous access to the external file (cf. access mode SHARED).
+<pre>
+           <b>Boolean</b> LOCKED;
+
+ LOCKED    <b>Boolean</b> <b>procedure</b> locked;  locked:= LOCKED;
+
+ LOCK      <b>integer</b> <b>procedure</b> lock(timelimit,loc1,loc2);
+                    <b>real</b> timelimit; <b>integer</b> loc1,loc2;
+           <b>begin</b>
+              lock := -1;
+              <b>if</b> timelimit&gt;0.0 <b>then</b> <b>begin</b>
+                 <b>if</b> LOCKED <b>then</b> unlock;
+                 ... ! try to lock indicated part of file, see below;
+                 <b>if</b> !success; <b>then</b> <b>begin</b> LOCKED := <b>true</b>; lock := 0 <b>end</b>
+              <b>end</b>
+           <b>end</b> lock;
+
+ UNLOCK   <b>Boolean</b> <b>procedure</b> unlock;
+          <b>begin</b>
+             unlock := checkpoint;
+             <b>if</b> LOCKED <b>then</b> <b>begin</b> !release file; LOCKED := <b>false</b> <b>end</b>
+          <b>end</b> unlock;
+</pre>
+ <p>The variable "LOCKED" indicates whether the file is currently locked by the
+ executing program. The procedure "locked" returns the current value.
+
+ <p>Procedure "lock" enables the program to get exclusive access to all or
+ part of the file. The effect of a "lock" call while the file is locked
+ ("LOCKED" is <b>true</b>) is that the previous lock is immediately released
+ (prior to the new locking attempt).
+
+ <p>The parameter "timelimit" is the (clock) time in seconds that is the maximum
+ waiting time for the resource. If "timelimit" is less than or equal to zero,
+ the procedure returns immediately without performing any actions upon the file.
+
+ <p>The parameters "loc1" and "loc2" identify the part of the file to be locked, by
+ giving the ordinal numbers of two external images (bytes). The program is
+ given exclusive access to a part of the file which includes the requested
+ region. If the two parameters are both zero, this implies locking the whole
+ file. Otherwise, the size of the part of the file that is actually locked, is
+ implementation-dependent; it may even include the entire file.
+
+ <p>A return value of zero indicates a successful "lock" operation. The value -1
+ indicates that "timelimit" was exceeded (or was zero or negative). A negative
+ value less than -1 indicates "lock" failure and its interpretation is
+ implementation-defined.
+
+ <p>The Boolean procedure "unlock" eliminates the effect of any preceding "lock"
+ call. The Boolean procedure "checkpoint" is called initially. The returned
+ value is that returned by the "checkpoint" call.
+
+<h2>Imagefiles</h2>
+
+ <p>The (file) <b>class</b> "imagefile" defines the common attributes for all image-
+ oriented files.
+<pre>
+      file <b>class</b> imagefile;
+           <b>begin</b> <b>text</b> image;
+              <b>procedure</b> setpos(i);  <b>integer</b> i;  image.setpos(i);
+              <b>integer</b> <b>procedure</b> pos;     pos    := image.pos;
+              <b>Boolean</b> <b>procedure</b> more;    more   := image.more;
+              <b>integer</b> <b>procedure</b> length;  length := image.length;
+           <b>end</b> imagefile;
+</pre>
+ <p>The individual logical unit of an external file associated with an imagefile is
+ called an "external image". Each external image is an an ordered sequence of
+ characters.
+
+ <p>The variable "image" is used to reference a text frame which acts as a buffer,
+ in the sense that it contains the external image currently being processed.
+
+ <p>The procedures "setpos", "pos", "more" and "length" are introduced for reasons
+ of convenience.
+
+ <p>The three standard subclasses of imagefile are "infile" (sequential input
+ file), "outfile" (sequential output file) and "directfile" (bidirectional
+ direct file). In addition, "printfile", a standard subclass of <b>class</b> outfile,
+ is available. It represents a line printer oriented file.
+
+<h2>The class "infile"</h2>
+<pre>
+ imagefile <b>class</b> infile;
+     <b>begin</b> <b>Boolean</b> ENDFILE;
+        <b>Boolean</b> <b>procedure</b> endfile;  endfile:= ENDFILE;
+        <b>Boolean</b> <b>procedure</b> open(fileimage); <b>text</b> fileimage; ... 10.4.1;
+        <b>Boolean</b> <b>procedure</b> close; ............................. 10.4.1;
+        <b>procedure</b> inimage; ................................... 10.4.2;
+        <b>Boolean</b> <b>procedure</b> inrecord; .......................... 10.4.2;
+        <b>character</b> <b>procedure</b> inchar; .......................... 10.4.3;
+        <b>Boolean</b> <b>procedure</b> lastitem; .......................... 10.4.4;
+        <b>text</b> <b>procedure</b> intext(w); <b>integer</b> w; ................. 10.4.5;
+        <b>integer</b> <b>procedure</b> inint; ............................. 10.4.6;
+        <b>long</b> <b>real</b> <b>procedure</b> inreal; .......................... 10.4.6;
+        <b>integer</b> <b>procedure</b> infrac; ............................ 10.4.6;
+
+        ENDFILE:= <b>true</b>
+        ...
+     <b>end</b> infile;
+</pre>
+ <p>An object of the <b>class</b> "infile" is used to represent an image-oriented
+ sequential input file.
+
+ <p>The variable ENDFILE is <b>true</b> whenever the file object is closed or the
+ external file is exhausted (i.e. "end of file" has been encountered). The
+ procedure "endfile" gives access to the value of ENDFILE.
+
+<h3>Open and close</h3>
+<pre>
+ OPEN      <b>Boolean</b> <b>procedure</b> open(fileimage);  <b>text</b> fileimage;
+           <b>if</b> ... <b>then</b> <b>begin</b> ...  ! see 10.1.2;
+              ENDFILE := <b>false</b>;
+              image   :- fileimage;
+              image   := <b>notext</b>;
+              setpos(length+1);
+              open    := OPEN := <b>true</b>;
+           <b>end</b> open;
+</pre>
+ <p>If successful, "open" returns <b>true</b> and sets ENDFILE <b>false</b>. In addition,
+ "image" references the parameter "fileimage" which is space-filled.
+<pre>
+ CLOSE     <b>Boolean</b> <b>procedure</b> close;
+           <b>if</b> OPEN <b>then</b>
+           <b>begin</b> ... ; ! perform closing actions, see 10.1.2;
+              image :- <b>notext</b>;
+              OPEN  := <b>false</b>;
+              close := ENDFILE := <b>true</b>
+           <b>end</b> close;
+</pre>
+ <p>If successful, "close" returns <b>true</b>. In addition, OPEN is <b>false</b>, ENDFILE is
+ <b>true</b> and "image" references <b>notext</b>.
+
+<h3>Inimage and inrecord</h3>
+<pre>
+ INIMAGE   <b>procedure</b> inimage;
+           <b>if</b> <b>not</b> OPEN <b>or</b> ENDFILE <b>then</b> error(&quot;...&quot;)
+           <b>else</b> <b>begin</b>
+              ... ; ! attempt to transfer external image to &quot;image&quot;;
+              <b>if</b> ... ! &quot;image&quot; too short; <b>then</b> error(&quot;...&quot;)
+              <b>else</b> <b>if</b> ... ! there was no more to read;
+              <b>then</b> <b>begin</b>
+                 ENDFILE := <b>true</b>;
+                 image   := &quot;!25!&quot; <b>end</b>
+              <b>else</b>  ... ; ! pad &quot;image&quot; with space(s);
+              setpos(1)
+           <b>end</b> inimage;
+</pre>
+ <p>The procedure "inimage" performs the transfer of an external file image into
+ "image". A run-time error occurs if "image" is <b>notext</b> or too short to contain
+ the external image. If it is longer than the external image, the latter is
+ left-adjusted within "image" and the remainder of the text is filled with
+ spaces. The position indicator is set to one.
+<pre>
+ INRECORD  <b>Boolean</b> <b>procedure</b> inrecord;
+           <b>if</b> <b>not</b> OPEN <b>or</b> ENDFILE <b>then</b> error(&quot;...&quot;)
+           <b>else</b> <b>begin</b>
+              ... ; ! transfer external image to &quot;image&quot; (no space-filling);
+              <b>if</b> ... ! no more to read;
+              <b>then</b> <b>begin</b>
+                 ENDFILE        := <b>true</b>;
+                 setpos(1);
+                 image.putchar('!25!') <b>end</b>  Note - POS = 2 now
+              <b>else</b> <b>begin</b>
+                 setpos(... !number of characters transferred + 1; );
+                 inrecord:= <b>not</b> ...! whole external image received?;
+              <b>end</b> if
+           <b>end</b> inrecord;
+</pre>
+ <p>The procedure "inrecord" is similar to "inimage" with the following exceptions.
+ Whenever the number of characters accessible in the external image is less than
+ "length", the rest of "image" is left unchanged. The part of the "image" that
+ was changed is from pos 1 upto (but not including) the resulting value of POS.
+ Moreover, if the external image is too long, only the "length" first characters
+ are input. The value returned by the procedure is <b>true</b> and the remaining
+ characters may be input through subsequent "inrecord" (or possibly "inimage")
+ statements. Otherwise, if the input of the external image was completed, the
+ value <b>false</b> is returned.
+
+ <p><b>Note</b>: If an "end of file" is encountered, EM ('!25!') is generated as a
+       single character external image, and the variable ENDFILE is given
+       the value <b>true</b>. A call on "inimage" or "inrecord" when ENDFILE
+       already has the value <b>true</b> constitutes a run-time error.
+<h3>Inchar</h3>
+<pre>
+ INCHAR    <b>character</b> <b>procedure</b> inchar;
+           <b>begin</b>
+              <b>if</b> <b>not</b> more <b>then</b> inimage;
+              inchar:= image.getchar
+           <b>end</b> inchar;
+</pre>
+ <p>The procedure "inchar" gives access to and scans past the next character.
+
+ <b>Note</b>: The result may be the "EOF-character" EM (ISOrank 25).
+
+<h3>Lastitem</h3>
+<pre>
+ LASTITEM  <b>Boolean</b> <b>procedure</b> lastitem;
+           <b>begin</b> <b>character</b> c;
+              c := ' ';
+              <b>while</b> <b>not</b> ENDFILE <b>and</b> <b>then</b> (c=' ' <b>or</b> <b>else</b> c='!9!')
+              <b>do</b> c := inchar;
+              lastitem := ENDFILE;
+              <b>if</b> c &lt;&gt; ' ' <b>then</b> setpos(pos-1)
+           <b>end</b> lastitem;
+</pre>
+ <p>The purpose of the procedure "lastitem" is to skip past all SP and HT
+ characters (ISOrank 32 and 9 respectively). The process of scanning may involve
+ the transfer of several successive external images. If the file contains no
+ further non-space, non-tab characters the value <b>true</b> is returned.
+
+<h3>Intext</h3>
+<pre>
+ INTEXT    <b>text</b> <b>procedure</b> intext(w); <b>integer</b> w;
+           <b>begin</b> <b>text</b> t;
+              intext :- t :- blanks(w);
+              <b>while</b> t.more <b>do</b> t.putchar(inchar)
+           <b>end</b> intext;
+</pre>
+ <p>The expression "intext(w)" where "w" is a positive integer is a reference to a
+ new alterable main frame of length w containing a copy of the next w characters
+ of the file. POS is set to the following character. The expression "intext(0)"
+ references <b>notext</b>. In contrast to the item-oriented procedures (see below),
+ "intext" operates on a continuous stream of characters, reading several images
+ if necessary.
+
+ <p><b>Note</b>: The result may be a reference to an "EOF-image" (cf. 10.4.2).
+
+<h3>Item-oriented input</h3>
+<pre>
+ ININT     <b>integer</b> <b>procedure</b> inint;
+           <b>if</b> lastitem <b>then</b> error(&quot;...&quot; ! Inint: End of file ;)
+           <b>else</b> <b>begin</b> <b>text</b> t;
+              t     :- image.sub(pos,length-pos+1);
+              inint := t.getint;
+              setpos(pos+t.pos-1)
+           <b>end</b> inint;
+
+
+ INREAL    <b>long</b> <b>real</b> <b>procedure</b> inreal;
+           <b>if</b> lastitem <b>then</b> error(&quot;...&quot; ! Inreal: End of file; )
+           <b>else</b> <b>begin</b> <b>text</b> t;
+              t      :- image.sub(pos,length-pos+1);
+              inreal := t.getreal;
+              setpos(pos+t.pos-1)
+           <b>end</b> inreal;
+
+
+ INFRAC    <b>integer</b> <b>procedure</b> infrac;
+           <b>if</b> lastitem <b>then</b> error(&quot;...&quot; ! Infrac: End of file; )
+           <b>else</b> <b>begin</b> <b>text</b> t;
+              t      :- image.sub(pos,length-pos+1);
+              infrac := t.getfrac;
+              setpos(pos+t.pos-1)
+           <b>end</b> infrac;
+</pre>
+ <p>The procedures "inint", "inreal" and "infrac" are defined in terms of the
+ corresponding de-editing procedures of "image". These three procedures,
+ starting at the current "pos", skip spaces and tab's, and then scan past and
+ convert a numeric item.
+
+<h2>The class "outfile"</h2>
+<pre>
+ file <b>class</b> outfile;
+      <b>begin</b>
+         <b>Boolean</b> <b>procedure</b> open(fileimage);  <b>text</b> fileimage; ... 10.5.1;
+         <b>Boolean</b> <b>procedure</b> close; .............................. 10.5.1;
+         <b>procedure</b> outimage; ................................... 10.5.2;
+         <b>procedure</b> outrecord; .................................. 10.5.3;
+         <b>procedure</b> breakoutimage; .............................. 10.5.4;
+         <b>Boolean</b> <b>procedure</b> checkpoint; ......................... 10.2.1;
+         <b>procedure</b> outchar(c); <b>character</b> c; .................... 10.5.6;
+         <b>procedure</b> outtext(t); <b>text</b> t; ......................... 10.5.7;
+         <b>text</b> <b>procedure</b> FIELD(w); <b>integer</b> w; ................... 10.5.8;
+         <b>procedure</b> outint(i,w); <b>integer</b> i,w; ................... 10.5.8;
+         <b>procedure</b> outfix(r,n,w); <b>long</b> <b>real</b> r; <b>integer</b> n,w; .... 10.5.8;
+         <b>procedure</b> outreal(r,n,w); <b>long</b> <b>real</b> r; <b>integer</b> n,w; ... 10.5.8;
+         <b>procedure</b> outfrac(i,n,w); <b>integer</b> i,n,w; .............. 10.5.8;
+
+        ... ;
+     <b>end</b> outfile;
+</pre>
+ <p>An object of the class "outfile" is used to represent an image-oriented
+ sequential output file.
+
+ <p><b>Note</b>: See 10.7 for a special property of procedures "open", "close",
+       "outimage" and "outrecord".
+
+<h3>Open and close</h3>
+<pre>
+ OPEN      <b>Boolean</b> <b>procedure</b> open(fileimage);  <b>text</b> fileimage;
+           <b>if</b> ... <b>then</b> <b>begin</b> ...  ! see 10.1.2;
+              image :- fileimage;
+              setpos(1);
+              open  := OPEN := <b>true</b>;
+           <b>end</b> open;
+
+
+ CLOSE     <b>Boolean</b> <b>procedure</b> close;
+           <b>if</b> OPEN <b>then</b> <b>begin</b> ... ! see 10.1.2;
+              <b>if</b> pos &lt;&gt; 1 <b>then</b> outimage;
+              image :- <b>notext</b>;
+              ... ; ! perform closing actions on external file;
+              OPEN  := <b>false</b>;
+              close := <b>true</b>;
+           <b>end</b> close;
+</pre>
+ <p>The procedure "close" calls "outimage" if the position indicator is not equal
+ to 1.
+<h3>Outimage</h3>
+<pre>
+ OUTIMAGE  <b>procedure</b> outimage;
+           <b>if</b> <b>not</b> OPEN <b>then</b> error(&quot;...&quot; ! file closed; )
+           <b>else</b> <b>begin</b>
+              ... ; ! transfer &quot;image&quot; to external image;
+              image := <b>notext</b>;
+              setpos(1)
+           <b>end</b> outimage;
+</pre>
+ <p>The transfer of an image from the text "image" to the file is performed by the
+ procedure "outimage". The procedure reacts in an implementation-defined way if
+ the "image" length is not appropriate for the external file. (Depending on file
+ type and host system, the external file does not necessarily record trailing
+ blanks from the "image".) After the transfer, "image" is cleared to blanks and
+ the position indicator is set to 1.
+
+<h3>Outrecord</h3>
+<pre>
+ OUTRECORD <b>procedure</b> outrecord;
+           <b>if</b> <b>not</b> OPEN <b>then</b>  error(&quot;...&quot; ! file closed; )
+           <b>else</b> <b>begin</b>
+              ... ; ! transfer image.sub(1,pos-1);
+                    ! <b>Note</b>: no blanking of &quot;image&quot;;
+              setpos(1)
+           <b>end</b> outrecord;
+</pre>
+ <p>The procedure "outrecord" transfers to the file only that part of "image" which
+ precedes POS. The contents are not blanked after the transfer, although POS is
+ set to one.
+
+<h3>Breakoutimage</h3>
+<pre>
+ BREAKOUTIMAGE
+           <b>procedure</b> breakoutimage;
+           <b>if</b> <b>not</b> OPEN <b>then</b> error(&quot;...&quot; ! file closed; )
+           <b>else</b> <b>begin</b>
+              ... ; ! output image.sub(1,pos-1);
+              image := <b>notext</b>;
+              setpos(1)
+           <b>end</b> breakoutimage;
+</pre>
+ <p>The procedure "breakoutimage" outputs the part of "image" that precedes POS.
+ The output is performed as a partial output of an external image, in the sense
+ that implicit line terminators are suppressed. On some external files this
+ operation is not possible. It then has an effect identical to "outrecord".
+
+ <p>After transfer the "image" is blanked and POS is set to one.
+
+ <p>One use of "breakoutimage" is to allow input from a terminal display on the
+ same line as one on which output (e.g. a prompt) has already been written.
+<h3>Checkpoint</h3>
+
+ <p>The procedure "checkpoint" is described in 10.2.1.
+
+<h3>Outchar</h3>
+<pre>
+ OUTCHAR   <b>procedure</b> outchar(c); <b>character</b> c;
+           <b>begin</b>
+              <b>if</b> <b>not</b> more <b>then</b> outimage;
+              image.putchar(c)
+           <b>end</b> outchar;
+</pre>
+ <p>The procedure "outchar" stores a character in the POS position of "image". If
+ "more" is <b>false</b>, "outimage" is called first.
+
+<h3>Outtext</h3>
+<pre>
+ OUTTEXT   <b>procedure</b> outtext(t); <b>text</b> t;
+           <b>begin</b>
+              <b>if</b> pos&gt;1 <b>and</b> <b>then</b> t.length&gt;length-pos+1 <b>then</b> outimage;
+              t.setpos(1);
+              <b>while</b> t.more <b>do</b> outchar(t.getchar);
+           <b>end</b> outtext;
+</pre>
+ <p>Procedure "outtext" always transfers the complete contents of the text
+ parameter to the file.
+
+<h3>Item-oriented output</h3>
+<pre>
+     <b>text</b> <b>procedure</b> FIELD(w); <b>integer</b> w;
+     <b>if</b> w&gt;length <b>then</b> error(&quot;...&quot; ! Item too long; )
+     <b>else</b> <b>begin</b>
+        <b>if</b> pos+w-1 &gt; length <b>then</b> outimage;
+        FIELD :- image.sub(pos,w);
+        setpos(pos+w)
+     <b>end</b> FIELD;
+
+
+ OUTINT    <b>procedure</b> outint(i,w); <b>integer</b> i,w;
+           <b>if</b>      w = 0 <b>then</b> FIELD(...).putint(i)   ! see below;
+           <b>else</b> <b>if</b> w &lt; 0
+           <b>then</b> <b>begin</b> <b>text</b> f;
+              f :- FIELD(-w);
+              f := <b>notext</b>;
+              f.sub(1,...).putint(i) <b>end</b>
+           <b>else</b> FIELD(w).putint(i);
+
+
+ OUTFIX    <b>procedure</b> outfix(r,n,w); <b>long</b> <b>real</b> r; <b>integer</b> n,w;
+           ... ; ! as body of outint, with &quot;putfix&quot; substituted for &quot;putint&quot;;
+
+ OUTREAL   <b>procedure</b> outreal(r,n,w); <b>long</b> <b>real</b> r; <b>integer</b> n,w;
+           ... ; ! as body of outint, with &quot;putreal&quot; substituted for &quot;putint&quot;;
+
+ OUTFRAC   <b>procedure</b> outfrac(i,n,w); <b>integer</b> i,n,w;
+           ... ; ! as body of outint, with &quot;putfrac&quot; substituted for &quot;putint&quot;;
+
+</pre>
+ <p>The procedures "outint", "outfix", "outreal" and "outfrac" are defined in terms
+ of the corresponding editing procedures of "image". They provide facilities for
+ "item-oriented" output. Each item is edited into a "field" (subtext of "image")
+ normally starting at the current accessible character. POS is advanced
+ correspondingly. If the remainder of "image" is too short to contain the item,
+ "outimage" is called implicitly prior to the editing operation. The field is
+ space-filled before the editing operation.
+
+ <p>A run-time error occurs if a field cannot be contained within the full length
+ of "image".
+
+ <p>Parameter "w" determines both the length of this field and the adjustment of
+ the item within it, as follows.
+<pre>
+     w &gt; 0    The field length is w, the item is right-adjusted.
+
+     w &lt; 0    The field length is abs(w), the item is left-adjusted.
+
+     w = 0    The field length is the exact number of characters needed
+              to contain the item (i.e. no leading or trailing spaces).
+</pre>
+<h2>The class "directfile"</h2>
+<pre>
+ imagefile <b>class</b> directfile;
+    <b>begin</b>   <b>integer</b> LOC, MAXLOC;  <b>Boolean</b> ENDFILE, LOCKED;
+       <b>integer</b> <b>procedure</b> location;  location:= LOC;
+       <b>Boolean</b> <b>procedure</b> endfile;   endfile := ENDFILE;
+       <b>Boolean</b> <b>procedure</b> locked;    locked  := LOCKED;
+       <b>Boolean</b> <b>procedure</b> open(fileimage); <b>text</b> fileimage; ...... 10.6.1;
+       <b>Boolean</b> <b>procedure</b> close; ................................ 10.6.1;
+       <b>integer</b> <b>procedure</b> lastloc; .............................. 10.6.2;
+       <b>integer</b> <b>procedure</b> maxloc; ............................... 10.6.2;
+       <b>procedure</b> locate(i); <b>integer</b> i; ......................... 10.6.2;
+       <b>procedure</b> inimage; ...................................... 10.6.3;
+       <b>procedure</b> outimage; ..................................... 10.6.4;
+       <b>Boolean</b> <b>procedure</b> deleteimage; .......................... 10.6.5;
+       <b>character</b> <b>procedure</b> inchar; ............................. 10.6.6;
+       <b>integer</b> <b>procedure</b> lock(t,i,j); <b>real</b> t; <b>integer</b> i,j; ..... 10.6.7;
+       <b>Boolean</b> <b>procedure</b> unlock; ............................... 10.6.7;
+       <b>Boolean</b> <b>procedure</b> checkpoint; ........................... 10.2.1;
+       <b>Boolean</b> <b>procedure</b> lastitem; ............................. 10.4.4;
+       <b>text</b> <b>procedure</b> intext; .................................. 10.4.5;
+       <b>integer</b> <b>procedure</b> inint; ................................ 10.4.6;
+       <b>long</b> <b>real</b> <b>procedure</b> inreal; ............................. 10.4.6;
+       <b>integer</b> <b>procedure</b> infrac; ............................... 10.4.6;
+       <b>procedure</b> outchar(c); <b>character</b> c; ...................... 10.5.6;
+       <b>procedure</b> outtext(t); <b>text</b> t; ........................... 10.5.7;
+       <b>text</b> <b>procedure</b> FIELD(w); <b>integer</b> w; ..................... 10.5.8;
+       <b>procedure</b> outint(i,w); <b>integer</b> i,w; ..................... 10.5.8;
+       <b>procedure</b> outfix(r,n,w);  <b>long</b> <b>real</b> r; <b>integer</b> n,w; ..... 10.5.8;
+       <b>procedure</b> outreal(r,n,w); <b>long</b> <b>real</b> r; <b>integer</b> n,w; ..... 10.5.8;
+       <b>procedure</b> outfrac(i,n,w); <b>integer</b> i,n,w; ................ 10.5.8;
+
+       ENDFILE:= <b>true</b>
+       ...
+    <b>end</b> directfile;
+</pre>
+
+ <p>An object of the class "directfile" is used to represent an image-oriented
+ direct file in which the individual images are addressable by ordinal numbers.
+
+ <p>The variable LOC contains the current ordinal number. When the file is closed,
+ the value of LOC is set to zero. The procedure "location" gives access to the
+ current value of LOC.
+
+ <p>The variable ENDFILE is <b>true</b> when the file is closed or when an image with
+ location greater than "lastloc" has been input (through "inimage"). It is set
+ after each "inimage" statement. The procedure "endfile" returns the current
+ value.
+
+ <p>The variable MAXLOC indicates the highest permitted value of LOC. On some
+ systems this value corresponds to the size of a preallocated file while, on
+ other systems which allow the file to be dynamically extended, this variable
+ is assigned the value "maxint"-1.
+
+<h3>Open and close</h3>
+<pre>
+ OPEN      <b>Boolean</b> <b>procedure</b> open(fileimage);  <b>text</b> fileimage;
+           <b>if</b> ... <b>then</b> <b>begin</b> ...  ! see 10.1.2;
+              MAXLOC := ... ; ! See below;
+              image  :- fileimage;
+              setpos(1);
+              locate(1);
+              open   := OPEN := <b>true</b>;
+           <b>end</b> open;
+
+ CLOSE     <b>Boolean</b> <b>procedure</b> close;
+           <b>if</b> OPEN <b>then</b> <b>begin</b> ... ! see 10.1.2;
+              image :- <b>notext</b>;
+              <b>if</b> LOCKED <b>then</b> unlock;
+              LOC   := MAXLOC := 0;
+              ... ;
+              OPEN  := <b>false</b>;
+              close := ENDFILE := <b>true</b>;
+           <b>end</b> close;
+</pre>
+
+ <p>The procedure "open" locates the first image of the file. The length of "image"
+ must, at all "inimage" and "outimage" statements, be identical to the length of
+ "image" at the "open" call. The value assigned to MAXLOC at "open" is either a
+ maximum length determined from the external file, or it is "maxint"-1 if no
+ such length exists.
+
+<h3>Locate, lastloc, and maxloc</h3>
+<pre>
+ LOCATE    <b>procedure</b> locate(i); <b>integer</b> i;
+           <b>if</b> i&lt;1 <b>or</b> i&gt;MAXLOC <b>then</b> error(&quot;...&quot; ! Parameter out of range; )
+           <b>else</b> <b>begin</b>
+              LOC:= i;
+              ... ;
+           <b>end</b> locate;
+
+ LASTLOC   <b>integer</b> <b>procedure</b> lastloc;
+           <b>if</b> <b>not</b> OPEN <b>then</b> error(&quot;...&quot; ! file closed; )
+           <b>else</b>  lastloc := ... ;
+
+ MAXLOC    <b>integer</b> <b>procedure</b> maxloc;
+           <b>if</b> <b>not</b> OPEN <b>then</b> error(&quot;...&quot; ! file closed; )
+           <b>else</b>  maxloc := MAXLOC;
+</pre>
+ <p>Procedure "locate" may be used to assign a given value to the variable LOC.
+ This assignment may be accompanied by implementation-defined checks and
+ (possibly asynchronous) instructions to an external memory device associated
+ with the file; no transfer to/from "image" is, however, performed. A parameter
+ to "locate" less than one or greater than MAXLOC constitutes a run-time error.
+
+ <p>The procedure "lastloc" indicates the largest location of any written image.
+ For a new file the value returned is zero.
+
+<h3>Inimage</h3>
+<pre>
+ INIMAGE   <b>procedure</b> inimage;
+           <b>if</b> <b>not</b> OPEN <b>then</b> error(&quot;...&quot; !file closed; )
+           <b>else</b> <b>begin</b>
+              setpos(1);
+              ENDFILE:= LOC &gt; lastloc;
+              <b>if</b> ENDFILE <b>then</b> image:= &quot;!25!&quot; <b>else</b>
+              <b>if</b> ... ! external written image at LOC exists ; <b>then</b>
+                ... ! transfer to &quot;image&quot;;...
+              <b>else</b> <b>begin</b>
+                <b>while</b> more <b>do</b> image.putchar('!0!')
+                   ! Note: now pos = length+1;
+             <b>end</b> not written;
+             locate(LOC+1)   ! Location for *next* image;
+           <b>end</b> inimage;
+</pre>
+
+ <p>The procedure "inimage" transfers into the text "image" a copy of the external
+ image as currently identified by the variable LOC. If the file does not contain
+ an image with an ordinal number equal to the value of LOC, the effect of the
+ procedure "inimage" is as follows. If the location indicated is greater than
+ "lastloc", then ENDFILE is set to <b>true</b> and the end of file text ("!25!") is
+ assigned to "image". Otherwise, if the image is a non-written image but there
+ exists at least one written image whose LOC is greater than current LOC, then
+ the "image" is filled with NUL ('!0!') characters and the position indicator is
+ set to "length"+1 (i.e. "more" becomes <b>false</b>). Finally the value of LOC is
+ incremented by one through a "locate" call.
+
+<h3>Outimage</h3>
+<pre>
+ OUTIMAGE  <b>procedure</b> outimage;
+           <b>if</b>      <b>not</b> OPEN     <b>then</b> error(&quot;...&quot; !file closed; )
+           <b>else</b> <b>if</b> LOC &gt; MAXLOC <b>then</b> error(&quot;...&quot; ! file overflow; );
+           <b>else</b> <b>begin</b>
+              ... ; ! output &quot;image&quot; to external image at LOC;
+              locate(LOC+1);
+              image := <b>notext</b>;
+              setpos(1)
+           <b>end</b> outimage;
+</pre>
+
+ <p>The procedure "outimage" transfers a copy of the text value "image" to the
+ external image, thereby storing in the file an external image whose ordinal
+ number is equal to the current value of LOC. If the file contains another image
+ with the same ordinal number, that image is overwritten. The value of LOC is
+ then incremented by one through a "locate" call.
+
+<h3>Deleteimage</h3>
+<pre>
+ DELETEIMAGE
+           <b>Boolean</b> <b>procedure</b> deleteimage;
+           <b>if</b> OPEN <b>and</b> <b>then</b> ... ! image LOC was written;
+           <b>then</b> <b>begin</b>
+              ... ; ! attempt to delete image;
+              <b>if</b> ... ! delete operation successful;
+              <b>then</b> <b>begin</b>
+                 deleteimage := <b>true</b>;
+                 locate(LOC+1);
+              <b>end</b> successful
+           <b>end</b> deleteimage;
+</pre>
+
+ <p>The Boolean procedure "deleteimage" makes the image identified by the current
+ value of LOC effectively un-written. Irrespective of any physical differences
+ on the external medium between never-written images and deleted ones, there is
+ no difference from the program's point of view. Note that this means that
+ "deleteimage" may decrement the value returned by "lastloc" (in case LOC was
+ equal to "lastloc").
+
+ <p><b>Note</b>: Outputting a NUL-filled image at location "lastloc" in the file
+       does not necessarily decrement the "lastloc" value; explicit
+       writing (outimage) of such images should be avoided.
+
+<h3>Inchar</h3>
+<pre>
+ INCHAR    <b>character</b> <b>procedure</b> inchar;
+           <b>begin</b>
+              <b>while</b> <b>not</b> more <b>do</b> inimage;
+              inchar:= image.getchar
+           <b>end</b> inchar;
+</pre>
+ <p><b>Note</b>: Inchar skips all unwritten images.
+
+<h3>Lock and Unlock</h3>
+
+ <p>The procedures "lock" and "unlock" (see 10.2.2) provide locking mechanisms. The
+ last two parameters of "lock" indicate the minimum range of locations to be
+ locked (inclusive).
+
+<h3>Item-oriented input/output</h3>
+
+ <p>The remaining procedures ("lastitem" to "intext" and "outchar" to "outtext")
+ are defined in accordance with the corresponding procedures of "infile" and
+ "outfile" respectively, i.e. their definitional algorithms are exact copies
+ of those given in these two classes.
+
+<h2>The class "printfile"</h2>
+
+ <p>The class "printfile" defines a class for line printer oriented output.
+
+<pre>
+ outfile <b>class</b> printfile;
+         <b>begin</b>   <b>integer</b>   LINE, LINES_PER_PAGE, SPACING, PAGE;
+         <b>integer</b> <b>procedure</b> line;  line := LINE;
+         <b>integer</b> <b>procedure</b> page;  page := PAGE;
+         <b>Boolean</b> <b>procedure</b> open(fileimage);  <b>text</b> fileimage; ..... 10.7.1;
+         <b>Boolean</b> <b>procedure</b> close; ................................ 10.7.1;
+         <b>procedure</b> linesperpage(n); <b>integer</b> n; ................... 10.7.2;
+         <b>procedure</b> spacing(n); <b>integer</b> n; ........................ 10.7.3;
+         <b>procedure</b> eject(n);  <b>integer</b> n; ......................... 10.7.4;
+         <b>procedure</b> outimage; ..................................... 10.7.5;
+         <b>procedure</b> outrecord; .................................... 10.7.5;
+
+         SPACING        := 1;
+         LINES_PER_PAGE := ... ;
+         ...
+      <b>end</b> printfile;
+</pre>
+
+ <p>An object of the class "printfile" is used to represent a line printer oriented
+ output file. The class is a subclass of "outfile". A file image normally
+ represents a line on a printed page.
+
+ <p>It is a property of this class that "outfile" attributes, which are redeclared
+ at "printfile" level, are not accessible to the user's program through explicit
+ qualification (<b>qua</b>). Thus these "outfile" procedures ("open", "close",
+ "outimage", "outrecord") may be envisaged as including the following initial
+ code:
+<pre>
+              <b>procedure</b> X...;
+              <b>inspect</b> <b>this</b> outfile
+                 <b>when</b> printfile <b>do</b> X...
+                 <b>otherwise</b> ...;
+</pre>
+ <p><b>Note</b>: Consequently, possible implicit calls of outimage from outchar,
+       close and the item-oriented output procedures are understood to
+       invoke "printfile.outimage".
+
+ <p>The variable LINE indicates the ordinal number of the next line to be printed
+ (on the current page), provided that no implicit or explicit "eject" statement
+ occurs. Its value is accessible through the procedure "line". Note that the
+ value of LINE may be greater than LINES_PER_PAGE (see 10.7.5).
+
+ <p>The variable PAGE indicates the ordinal number of the current page. Its value
+ may be retrieved by means of procedure "page".
+<h3>Open and close</h3>
+<pre>
+ OPEN      <b>Boolean</b> <b>procedure</b> open(fileimage);  <b>text</b> fileimage;
+           <b>if</b> ... <b>then</b> <b>begin</b> ...  ! see 10.1.2;
+              image :- fileimage;
+              PAGE  := 0;
+              LINE  := 1;
+              setpos(1);
+              eject(1);
+              open  := OPEN := <b>true</b>;
+           <b>end</b> open;
+
+
+ CLOSE     <b>Boolean</b> <b>procedure</b> close;
+           <b>if</b> OPEN <b>then</b> <b>begin</b> ... ! see 10.1.2;
+              <b>if</b> pos &lt;&gt; 1 <b>then</b> outimage;
+              eject(LINES_PER_PAGE);
+              LINE    := 0;
+              SPACING := 1;
+              LINES_PER_PAGE:= ... ;
+              image   :- <b>notext</b>;
+              ... ;
+              OPEN    := <b>false</b>;
+              close   := <b>true</b>;
+           <b>end</b> close;
+</pre>
+
+ <p>The procedures "open" and "close" conform to the rules of 10.2. In addition,
+ "close" outputs the current value of "image" if POS is not equal to 1 and
+ set LINE to zero.
+
+<h3>Lines per page</h3>
+<pre>
+ LINESPERPAGE
+           <b>integer</b> <b>procedure</b> linesperpage(n); <b>integer</b> n;
+           <b>begin</b>
+              linesperpage := LINES_PER_PAGE;
+              LINES_PER_PAGE:= <b>if</b> n &gt; 0 <b>then</b> n
+                              <b>else</b> <b>if</b> n &lt; 0 <b>then</b> maxint
+                                   <b>else</b>  ... ; ! default value;
+</pre>
+
+ <p>The variable LINES_PER_PAGE indicates the maximum number of physical lines
+ that may be printed on each page, including intervening blank lines. An
+ implementation-defined value is assigned to the variable at the time of object
+ generation, and when the printfile is closed. The value of the variable may be
+ retreived by a call on "linesperpage"; in addition the variable is givan a new
+ value as follows.
+
+ <p>If the parameter to "linesperpage" is zero, LINES_PER_PAGE is reset to the
+ original value (assigned at object generation). A parameter value less than
+ zero may be used to indicate an "infinite" value of LINES_PER_PAGE, thus
+ avoiding any automatic calls on "eject".
+
+<h3>Spacing</h3>
+<pre>
+ SPACING   <b>procedure</b> spacing(n); <b>integer</b> n;
+           <b>if</b>  0&lt;=n <b>and</b> n&lt;=LINES_PER_PAGE  <b>then</b> SPACING := n
+           <b>else</b>  error(&quot;...&quot; ! Parameter out of range; );
+</pre>
+
+ <p>The variable SPACING represents the value by which the variable LINE is
+ incremented after the next printing operation.  Its value may be changed by the
+ procedure "spacing". A call on the procedure "spacing" with a parameter less
+ than zero or greater than LINES_PER_PAGE constitutes an error. The effect
+ of a a parameter to "spacing" which is equal to zero may be defined as forcing
+ successive printing operations on the same physical line. Note, however, that
+ on some physical media this may not be possible, in which case spacing(0) has
+ the same effect as spacing(1) (i.e. no overprinting).
+
+<h3>Eject</h3>
+<pre>
+ EJECT     <b>procedure</b> eject(n); <b>integer</b> n;
+           <b>if</b>        <b>not</b> OPEN <b>then</b>  error(&quot;...&quot; ! file closed;)
+           <b>else</b> <b>if</b>   n &lt;= 0   <b>then</b>  error(&quot;...&quot; ! Parameter out of range;)
+           <b>else</b> <b>begin</b>
+              <b>if</b> n &gt; LINES_PER_PAGE <b>then</b> n := 1;
+              <b>if</b> n &lt;= LINE <b>then</b>
+              <b>begin</b>
+                 ... ; ! change to new page on external file;
+                 PAGE := PAGE + 1
+              <b>end</b>;
+              ... ; ! move to line &quot;n&quot; on current (external) page;
+              LINE := n
+           <b>end</b> eject;
+</pre>
+ <p>The procedure "eject" is used to position to a certain line identified by the
+ parameter, n. The variable "PAGE" is incremented by one each time an explicit
+ or implicit "eject" implies a new page.
+
+ <p>The following cases can be distinguished:
+<pre>
+     n &lt;= 0                 : ERROR
+     n &gt;  LINES_PER_PAGE    : Equivalent to eject (1)
+     n &lt;= LINE              : Position to line number n on the next page
+     n &gt;  LINE              : Position to line number n on the current page
+</pre>
+ <p>The tests above are performed in the given sequence.
+
+<h3>Outimage and outrecord</h3>
+<pre>
+ OUTIMAGE  <b>procedure</b> outimage;
+           <b>if</b> <b>not</b> OPEN <b>then</b>  error(&quot;...&quot; ! file closed; )
+           <b>else</b> <b>begin</b>
+              <b>if</b> LINE &gt; LINES_PER_PAGE <b>then</b> eject(1);
+              ... ; ! output the image on the line indicated by LINE;
+              LINE  := LINE + SPACING;
+              image := <b>notext</b>;
+              setpos(1)
+           <b>end</b> outimage;
+
+
+ OUTRECORD <b>procedure</b> outrecord;
+           <b>if</b> <b>not</b> OPEN <b>then</b>  error(&quot;...&quot; ! file closed; )
+           <b>else</b> <b>begin</b>
+              <b>if</b> LINE &gt; LINES_PER_PAGE <b>then</b> eject(1);
+              ... ; ! output image.sub(1,pos-1) on the line indicated by LINE;
+              LINE := LINE + SPACING;
+              setpos(1)
+           <b>end</b> outrecord;
+</pre>
+
+ <p>The procedures "outimage" and "outrecord" operate according to the rules of
+ 10.2.3. In addition, they update the variable LINE (and possibly PAGE).
+
+ <p><b>Note</b>: In addition, the procedure "breakoutimage" is inherited from the
+       class prefix "outfile". This procedure does not update LINE or
+       PAGE.
+<h2>Bytefiles</h2>
+
+ <p>The class bytefile is the common prefix class for all byte-oriented files.
+
+<pre>
+    file <b>class</b> bytefile;
+         <b>begin</b> <b>short</b> <b>integer</b> BYTESIZE;
+            <b>short</b> <b>integer</b> <b>procedure</b> bytesize; bytesize := BYTESIZE;
+
+         <b>end</b> bytefile;
+</pre>
+
+ <p>Bytefiles read and write files as continuous streams of bytes. The variable
+ BYTESIZE defines the range of the byte values transferred. Byte values are
+ integers in the range (0:2**BYTESIZE-1). The BYTESIZE value of the file object
+ is accessible through procedure "bytesize".
+
+ <p><b>Note</b>: "Bytesize" returns zero before first "open" of the bytefile.
+
+ <p>There are three standard subclasses of "bytefile":
+<pre>
+     &quot;inbytefile&quot;      representing a sequential file for which input
+                       operations are available.
+
+     &quot;outbytefile&quot;     representing a sequential file for which output
+                       operations are available.
+
+     &quot;directbytefile&quot;  representing a direct file with facilities for
+                       both input and output.
+</pre>
+
+<h2>The class "inbytefile"</h2>
+<pre>
+ bytefile <b>class</b> inbytefile;
+          <b>begin</b> <b>Boolean</b> ENDFILE;
+          <b>Boolean</b> <b>procedure</b> endfile;  endfile:= ENDFILE;
+          <b>Boolean</b> <b>procedure</b> open; ......................... 10.9.1;
+          <b>Boolean</b> <b>procedure</b> close; ........................ 10.9.1;
+          <b>short</b> <b>integer</b> <b>procedure</b> inbyte; ................. 10.9.2;
+          <b>text</b> <b>procedure</b> intext(t);   <b>text</b> t; ............. 10.9.3;
+
+          ENDFILE:= <b>true</b>;
+          ...
+       <b>end</b> inbytefile;
+</pre>
+ <p>An object of the class "inbytefile" is used to represent a byte-oriented
+ sequential input file.
+
+ <p>Variable "ENDFILE" is <b>true</b> if there are no more bytes to read. The procedure
+ "endfile" returns the value of ENDFILE.
+
+<h3>Open and close</h3>
+<pre>
+ OPEN      <b>Boolean</b> <b>procedure</b> open;
+           <b>if</b> ... <b>then</b> <b>begin</b> ...  ! see 10.1.2;
+              ENDFILE  := <b>false</b>;
+              BYTESIZE := ... ! value of access mode BYTESIZE;
+              open     := OPEN := <b>true</b>;
+           <b>end</b> open;
+
+
+ CLOSE     <b>Boolean</b> <b>procedure</b> close;
+           <b>if</b> OPEN <b>then</b> <b>begin</b> ... ! see 10.1.2;
+              ... ;
+              OPEN  := <b>false</b>;
+              close := ENDFILE := <b>true</b>;
+           <b>end</b> close;
+</pre>
+<h3>Inbyte</h3>
+<pre>
+ INBYTE    <b>short</b> <b>integer</b> <b>procedure</b> inbyte;
+              <b>if</b> ENDFILE <b>then</b> error(&quot;...&quot; ! End of file ;)
+              <b>else</b> <b>if</b> ... ! no more bytes to read;
+              <b>then</b> ENDFILE := <b>true</b>  ! inbyte returns zero;
+              <b>else</b> inbyte  := ...! next byte of size BYTESIZE;
+</pre>
+ <p>The procedure "inbyte" returns the <b>short</b> <b>integer</b> value corresponding to the
+ input byte. If there are no more bytes to read, a zero result is returned. If
+ prior to an "inbyte" call ENDFILE is <b>true</b>, a run-time error occurs.
+
+<h3>Intext</h3>
+<pre>
+ INTEXT    <b>text</b> <b>procedure</b> intext(t);   <b>text</b> t;
+           <b>begin</b>
+              t.setpos(1);
+              <b>while</b> t.more <b>and</b> <b>not</b> ENDFILE <b>do</b> t.putchar(char(inbyte));
+              <b>if</b> ENDFILE <b>then</b> t.setpos(t.pos-1);
+              intext:- t.sub(1,t.pos-1)
+           <b>end</b> intext;
+</pre>
+ <p>The procedure "intext" fills the frame of the parameter "t" with successive
+ input bytes.
+
+<h2>The class "outbytefile"</h2>
+<pre>
+ bytefile <b>class</b> outbytefile;
+          <b>begin</b>
+          <b>Boolean</b> <b>procedure</b> open; ....................... 10.10.1;
+          <b>Boolean</b> <b>procedure</b> close; ...................... 10.10.1;
+          <b>procedure</b> outbyte(x); <b>short</b> <b>integer</b> x; ........ 10.10.2;
+          <b>procedure</b> outtext(t); <b>text</b> t; ................. 10.10.3;
+          <b>Boolean</b> <b>procedure</b> checkpoint; ................. 10.2.1;
+
+ <b>end</b> outbytefile;
+</pre>
+ <p>An object of the class "outbytefile" is used to represent a sequential output
+ file of bytes.
+
+<h3>Open and close</h3>
+<pre>
+ OPEN      <b>Boolean</b> <b>procedure</b> open;
+           <b>if</b> ... <b>then</b> <b>begin</b> ...  ! see 10.1.2;
+              BYTESIZE := ... ! value of access mode BYTESIZE;
+              open     := OPEN:= <b>true</b>;
+           <b>end</b> open;
+
+ CLOSE     <b>Boolean</b> <b>procedure</b> close;
+           <b>if</b> OPEN <b>then</b> <b>begin</b> ... ! see 10.1.2;
+              OPEN  := <b>false</b>;
+              close := <b>true</b>;
+           <b>end</b> close;
+</pre>
+<h3>Outbyte</h3>
+<pre>
+ OUTBYTE   <b>procedure</b> outbyte(x);    <b>short</b> <b>integer</b> x;
+              <b>if</b> <b>not</b> OPEN <b>then</b> error(&quot;...&quot; ! file closed; )
+              <b>else</b> <b>if</b> x &lt; 0 <b>or</b> <b>else</b> x &gt;= 2**BYTESIZE
+              <b>then</b> error(&quot;...&quot; ! Outbyte, illegal byte value ;)
+              <b>else</b> ... ; ! output of x;
+</pre>
+ <p>The procedure "outbyte" outputs a byte corresponding to the parameter value. If
+ the parameter value is less than zero or exceeds the maximum permitted value,
+ as defined by BYTESIZE, a run-time error occurs. If the file is not open, a
+ run-time error occurs.
+
+<h3>Outtext</h3>
+<pre>
+ OUTTEXT  <b>procedure</b> outtext(t);   <b>text</b> t;
+          <b>begin</b>
+             t.setpos(1);
+             <b>while</b> t.more <b>do</b>  outbyte(rank(t.getchar))
+          <b>end</b> outtext;
+</pre>
+ <p>The procedure "outtext" outputs all characters in the parameter "t" as bytes.
+
+<h2>The class "directbytefile"</h2>
+
+ <p>The class "directbytefile" defines a byte-oriented direct file.
+
+<pre>
+ bytefile <b>class</b> directbytefile;
+       <b>begin</b> <b>integer</b> LOC, MAXLOC;  <b>Boolean</b> LOCKED;
+       <b>Boolean</b> <b>procedure</b> endfile; endfile:=OPEN <b>and</b> <b>then</b> LOC&gt;lastloc;
+       <b>integer</b> <b>procedure</b> location; location := LOC;
+       <b>integer</b> <b>procedure</b> maxloc; maxloc := MAXLOC;
+       <b>Boolean</b> <b>procedure</b> locked; locked := LOCKED;
+       <b>Boolean</b> <b>procedure</b> open; ............................... 10.11.1;
+       <b>Boolean</b> <b>procedure</b> close; .............................. 10.11.1;
+       <b>integer</b> <b>procedure</b> lastloc; ............................ 10.11.2;
+       <b>procedure</b> locate(i);   <b>integer</b> i; ..................... 10.11.2;
+       <b>short</b> <b>integer</b> <b>procedure</b> inbyte; ....................... 10.11.3;
+       <b>procedure</b> outbyte(x);  <b>short</b> <b>integer</b> x; ............... 10.11.3;
+       <b>Boolean</b> <b>procedure</b> checkpoint; ......................... 10.2.1;
+       <b>integer</b> <b>procedure</b> lock(t,i,j); <b>real</b> t; <b>integer</b> i,j; ... 10.11.4;
+       <b>Boolean</b> <b>procedure</b> unlock; ............................. 10.11.4;
+       <b>procedure</b> intext(t);   <b>text</b> t; ........................ 10.9.3;
+       <b>procedure</b> outtext(t);  <b>text</b> t; ........................ 10.10.3;
+          ...
+       <b>end</b> directbytefile;
+</pre>
+ <p>An object of the class "directbytefile" is used to represent an external file
+ in which the individual bytes are addressable by ordinal numbers. The variable
+ LOC is defined to represent such ordinal numbers. When the file is closed, the
+ value of LOC is zero.
+
+ <p>The variable MAXLOC indicates the maximum possible location on the external
+ file. If this is not meaningful MAXLOC has the value of "maxint"-1. The
+ procedure "maxloc" gives access to the current MAXLOC value.
+
+ <p>The procedure "endfile" returns <b>true</b> whenever LOC indicates an address
+ greater than "lastloc".
+
+ <p>The procedures "intext" and "outtext" conform to the pattern for "inbytefile"
+ and "outbytefile", respectively.
+
+<h3>Open and close</h3>
+<pre>
+ OPEN      <b>Boolean</b> <b>procedure</b> open;
+           <b>if</b> ... <b>then</b> <b>begin</b> ...  ! see 10.1.2;
+              LOC      := 1;
+              MAXLOC   := ...; ! fixed size, or maxint-1;
+              BYTESIZE := ... ! value of access mode BYTESIZE;
+              open     := OPEN := <b>true</b>;
+           <b>end</b> open;
+
+
+ CLOSE     <b>Boolean</b> <b>procedure</b> close;
+           <b>if</b> OPEN <b>then</b> <b>begin</b> ... ! see 10.1.2;
+              MAXLOC := 0;
+              OPEN   := <b>false</b>;
+              close  := <b>true</b>;
+           <b>end</b> close;
+</pre>
+<h3>Locate and lastloc</h3>
+<pre>
+ LOCATE    <b>procedure</b> locate(p);   <b>integer</b> p;
+              <b>if</b> p &lt; 1 <b>or</b> p &gt; MAXLOC
+              <b>then</b> error(&quot;...&quot; ! Parameter out of range; )
+              <b>else</b> LOC := p;
+
+ LASTLOC   <b>integer</b> <b>procedure</b> lastloc;
+              <b>if</b> <b>not</b> OPEN <b>then</b> error(&quot;...&quot; ! file closed; )
+              <b>else</b> lastloc := ...;
+</pre>
+ <p>The current last written location is returned by the procedure "lastloc". The
+ procedure "location" returns the current value of LOC. The procedure "locate"
+ may be used to assign a given value to the variable. A parameter value to
+ "locate" which is less than one or greater than MAXLOC constitutes a run-time
+ error.
+
+<h3>Inbyte and outbyte</h3>
+<pre>
+ INBYTE    <b>short</b> <b>integer</b> <b>procedure</b> inbyte;
+           <b>if</b> <b>not</b> OPEN <b>then</b> error(&quot;...&quot; !file closed; )
+           <b>else</b> <b>if</b> LOC &lt;= lastloc
+           <b>then</b> <b>begin</b>
+              inbyte := ... ! next byte of size BYTESIZE;...;
+              LOC    := LOC+1
+           <b>end</b> inbyte;
+
+
+ OUTBYTE   <b>procedure</b> outbyte(x);  <b>short</b> <b>integer</b> x;
+           <b>if</b> <b>not</b> OPEN <b>then</b> error(&quot;...&quot; !file closed; )
+           <b>else</b> <b>if</b> x &lt; 0 <b>or</b> <b>else</b> x &gt;= 2**BYTESIZE
+           <b>then</b> error(&quot;...&quot; ! Outbyte, illegal byte value ;);
+           <b>else</b> <b>if</b> LOC &gt; MAXLOC <b>then</b> error(&quot;...&quot; !file overflow; )
+           <b>else</b> <b>begin</b>
+              ... ! output of x;
+              LOC := LOC + 1
+           <b>end</b> outbyte;
+</pre>
+ <p>The procedure "inbyte" reads one byte, returning its integer value. The result
+ of "inbyte" from an unwritten LOC is zero (cf. 10.3.2).
+
+ <p>The procedure "outbyte" outputs a byte according to the given parameter value
+ (cf. 10.3.3).
+
+<h3>Lock and Unlock</h3>
+
+ <p>The procedures "lock" and "unlock" (see 10.2.2) provide locking mechanisms. The
+ last two parameters of "lock" indicate the minimum range of (byte) locations
+ to be locked (inclusive).
+
+</body>
+</html>

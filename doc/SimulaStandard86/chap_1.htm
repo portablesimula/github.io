@@ -1,0 +1,511 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta http-equiv="Content-Language" content="en-gb">
+<link rel="stylesheet" type="text/css" href="../includes/standard.css">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Chapter 1: Lexical Tokens</title>
+</head>
+
+<body>
+
+<h1>Chapter 1<br>
+LEXICAL TOKENS</h1>
+<h2>DEFINITIONAL CONVENTIONS</h2>
+<p>The meta language used in this standard to specify the syntax of the constructs is based on the Backus-Naur Form.
+The meanings of the various meta symbols are listed in the table below. Further (semantic) specifications of the
+constructs are given in prose and, in some cases, by equivalent program fragments. In such program fragments
+some identifiers introduced by declarations are printed in upper case. The use of upper case letters signifies that
+the identifier in question represents some quantity which is inaccessible to a program. An example of this convention
+is the identifier EVENT_NOTICE of chapter 12. Any other identifier that is defined elsewhere in the standard will
+denote the corresponding entity by its occurrence in such a program fragment.</p>
+<div align="center">
+  <table border="0" width="100%" cellspacing="1">
+    <tr>
+      <td width="7%" align="center" valign="top">
+        <p align="left"><u>Note</u>:</p>
+      </td>
+      <td width="94%" align="center">
+        <p align="left"> The use of program fragments as described above, as well as the description of standard
+        facilities (see chapters 8-12) by algorithmic means should be taken as definitive only as far as
+        their effect is concerned. An actual implementation should seek to produce these effects in as efficient a
+        manner as practicable. Furthermore, when arithmetic of real type is concerned, even the effects must be regarded
+        as defined with only a finite degree of accuracy (see 3.5.3).</td>
+    </tr>
+  </table>
+</div>
+<h4>Metalanguage Symbols</h4>
+<pre>
+          Metasymbol             Meaning
+
+              =                  is defined to be
+              !                  alternatively
+              [ x ]              0 or 1 instance of x
+              { x }              0 or more instances of x
+              ( x | y )          grouping: either x or y
+              xyz                the terminal symbol xyz
+              meta-identifier    a non-terminal symbol
+              ...                see below
+</pre>
+<p>A meta-identifier is a sequence of letters, digits and hyphens beginning with a letter. The identifier has
+intentionally been chosen to convey a hint of its meaning to the reader. The exact meaning is,
+however, defined by its (single) occurrence on the left hand side of a
+production. When used outside productions these identifiers are generally written with spaces instead of
+hyphens, except in cases where possible ambiguities might result.</p>
+<p>A few productions contain the ellipsis (...) as a right hand side. In such cases a prose explanation is given
+immediately below the production.</p>
+<p>A sequence of terminal and non-terminal symbols in a production implies concatenation of the text that they
+ultimately represent. Within chapter 1 this concatenation is direct; no characters may
+intervene. In the remainder of the Standard the concatenation is in accordance with the
+rules set out in this chapter.</p>
+<p>The characters required to form SIMULA programs are those explicitly classified as "basic" in the table given in
+section 1.2. Additional characters of that table may be employed as described in that
+section.</p>
+<p>A SIMULA source module consists of directive lines and program lines. Apart from 1.1 this standard is not
+concerned with directive lines. The lexical tokens used to construct program lines are classified into special
+symbols, identifiers, unsigned numbers, simple strings and character constants.</p>
+<p>No lexical token may consist of more than 72 characters.</p>
+<pre>
+     letter
+         =  A | B | C | D | E | F | G | H | I
+         |  J | K | L | M | N | O | P | Q | R
+         |  S | T | U | V | W | X | Y | Z
+         |  a | b | c | d | e | f | g | h | i
+         |  j | k | l | m | n | o | p | q | r
+         |  s | t | u | v | w | x | y | z
+</pre>
+<p>The representation of any letter (upper or lower case, differences in font, etc.) occurring anywhere other than in
+a simple string or a character constant has no significance in that occurrence for the meaning of the program.</p>
+<pre>
+     digit
+         = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+     space
+         =  SP
+</pre>
+<p>SP is the space (blank) character (ISO 646 code 2/0).</p>
+<h2>Directive lines</h2>
+<p>If the first character of a line is "%" (percent) the line as a whole is a directive line.</p>
+<p>A directive line serves to communicate information to the processor and consequently its meaning is entirely
+implementation-dependent, with the following single exception. If the second character is a space, the line has
+no significance; it may be used for annotation purposes.</p>
+<div align="center">
+  <table border="0" width="100%" cellspacing="1">
+    <tr>
+      <td width="7%" align="center" valign="top">
+        <p align="left"><u>Note</u>:</p>
+      </td>
+      <td width="94%" align="center">
+        <p align="left"> The interpretation of a directive line takes precedence over the treatment of subsequent
+        lines.<br>
+        The interpretation by the processor may cause inclusion of lines not present in the module, or
+        deletion of some lines actually following the directive in question.</td>
+    </tr>
+  </table>
+</div>
+<p>The language defined in the following defines the resulting program text after all directive lines have been
+interpreted and thereafter deleted.</p>
+<h2>The character set</h2>
+<p>The standard presupposes an 8-bit internal representation of characters. ISO 2022). Thus the isocode facility
+allows for inclusion of characters with "isorank" value greater than 127 in simple strings and character constants.
+An implementation may restrict this possibility as well as the character set given below, as long as the "basic"
+characters of the table are included.</p>
+<p>The standard character set is defined by the table below. For each character its "isorank" (see 9.2), name or
+printable representation and the classification of the character as a program text constituent are given.</p>
+<pre>
+  basic:    Significant in all contexts.
+  skip:     Skipped in all contexts.
+  graphic:  Significant inside comments, inside simple strings, and inside
+            character constants; illegal outside these constructs.
+  national: Reserved for national alphabet extension; treated as &quot;graphic&quot;.
+  format:   Format effector, see 1.9.
+</pre>
+<br>
+<pre>
+   0 NUL  skip        32  SP  basic       64      national    96      national
+   1 SOH  illegal     33  !   basic       65  A   basic       97  a   basic
+   2 STX  illegal     34  &quot;   basic       66  B   basic       98  b   basic
+   3 ETX  illegal     35  #   graphic     67  C   basic       99  c   basic
+   4 EOT  illegal     36  $   graphic     68  D   basic      100  d   basic
+   5 ENQ  illegal     37  %   graphic     69  E   basic      101  e   basic
+   6 ACK  illegal     38  &amp;   basic       70  F   basic      102  f   basic
+   7 BEL  illegal     39  '   basic       71  G   basic      103  g   basic
+
+   8 BS   format      40  (   basic       72  H   basic      104  h   basic
+   9 HT   format      41  )   basic       73  I   basic      105  i   basic
+  10 LF   format      42  *   basic       74  J   basic      106  j   basic
+  11 VT   format      43  +   basic       75  K   basic      107  k   basic
+  12 FF   format      44  ,   basic       76  L   basic      108  l   basic
+  13 CR   format      45  -   basic       77  M   basic      109  m   basic
+  14 SO   illegal     46  .   basic       78  N   basic      110  n   basic
+  15 SI   illegal     47  /   basic       79  O   basic      111  o   basic
+
+  16 DLE  illegal     48  0   basic       80  P   basic      112  p   basic
+  17 DC1  illegal     49  1   basic       81  Q   basic      113  q   basic
+  18 DC2  illegal     50  2   basic       82  R   basic      114  r   basic
+  19 DC3  illegal     51  3   basic       83  S   basic      115  s   basic
+  20 DC4  illegal     52  4   basic       84  T   basic      116  t   basic
+  21 NAK  illegal     53  5   basic       85  U   basic      117  u   basic
+  22 SYN  illegal     54  6   basic       86  V   basic      118  v   basic
+  23 ETB  illegal     55  7   basic       87  W   basic      119  w   basic
+
+  24 CAN  illegal     56  8   basic       88  X   basic      120  x   basic
+  25 EM   illegal     57  9   basic       89  Y   basic      121  y   basic
+  26 SUB  illegal     58  :   basic       90  Z   basic      122  z   basic
+  27 ESC  illegal     59  ;   basic       91      national   123      national
+  28 FS   illegal     60  &lt;   basic       92      national   124      national
+  29 GS   illegal     61  =   basic       93      national   125      national
+  30 RS   illegal     62  &gt;   basic       94      national   126      national
+  31 US   illegal     63  ?   graphic     95  _   basic      127 DEL  skip
+</pre>
+<p>
+         Table 1.1. <u>Standard character set</u><br>
+          (International Reference Version)</p>
+
+<h2>Special symbols</h2>
+<pre>
+         +   -   *   /   //  **      Arithmetic operators
+         &amp;                           Text concatenation operator, or exp. mark
+         &amp;&amp;                          Exponent mark in <b>long</b> <b>real</b> numbers
+         :=  :-                      Assignment operators
+         &lt;   &lt;=  =   &gt;=  &gt;   &lt;&gt;      Value relational operators
+         ==  =/=                     Reference relational operators
+         '                           Character quote
+         &quot;   &quot;&quot;                      String quote (&quot;&quot; only within strings)
+         !                           Code quote, or comment
+         ;                           Statement separator, or
+                                     declaration or specification delimiter
+         :                           Array bounds separator, or
+                                     label definition or <b>virtual</b> delimiter
+         (   )                       Parameter, array bounds grouping, or expr.
+         .                           Remote indicator (&quot;dot&quot;), or decimal mark
+         ,                           Parameter, array bounds pair or expression
+                                     separator
+</pre>
+<p>
+     Table 1.2. <u>Special symbols, excluding key words</u><br>
+<br>
+Normally the syntax of the language assumes that all
+syntactic units are recognised as being the largest
+possible string of characters which fits the syntax of a
+symbol. However, in an array declaration the symbol ":" is
+always a bounds separator, even if it is immediately
+followed by a minus.</p>
+<pre>
+         <b>activate</b>    <b>else</b>        <b>if</b>          <b>none</b>        <b>short</b>
+         <b>after</b>       <b>end</b>         <b>imp</b>         <b>not</b>         <b>step</b>
+         <b>and</b>         <b>eq</b>          <b>in</b>          <b>notext</b>      <b>switch</b>
+         <b>array</b>       <b>eqv</b>         <b>inner</b>
+         <b>at</b>          <b>external</b>    <b>inspect</b>     <b>or</b>          <b>text</b>
+                                 <b>integer</b>     <b>otherwise</b>   <b>then</b>
+         <b>before</b>      <b>false</b>       <b>is</b>                      <b>this</b>
+         <b>begin</b>       <b>for</b>                     <b>prior</b>       <b>to</b>
+         <b>boolean</b>                 <b>label</b>       <b>procedure</b>   <b>true</b>
+                     <b>ge</b>          <b>le</b>          <b>protected</b>
+         <b>character</b>   <b>go</b>          <b>long</b>                    <b>until</b>
+         <b>class</b>       <b>goto</b>        <b>lt</b>          <b>qua</b>
+         <b>comment</b>     <b>gt</b>                                  <b>value</b>
+                                 <b>name</b>        <b>reactivate</b>  <b>virtual</b>
+         <b>delay</b>       <b>hidden</b>      <b>ne</b>          <b>real</b>
+         <b>do</b>                      <b>new</b>         <b>ref</b>         <b>when</b>
+                                                         <b>while</b>
+
+</pre>
+<p>
+Table 1.3. <u>SIMULA key words</u></p>
+
+<div align="center">
+  <table border="0" width="100%" cellspacing="1">
+    <tr>
+      <td width="7%" align="center" valign="top">
+        <p align="left"><u>Note</u>:</p>
+      </td>
+      <td width="94%" align="center">
+        <p align="left"> For typographical reasons, the standard key words
+      may, within this Standard, be printed as indicated in
+      table 1.3. Within a program, the key words are
+      printed as identifiers (cfr. letter production
+      above).</td>
+    </tr>
+  </table>
+</div>
+<h2>Identifiers</h2>
+<pre>
+    identifier
+        =  letter  { letter  |  digit  |  _ }
+</pre>
+No identifier can have the same spelling as any key word.
+Apart from this, identifiers may be chosen freely. They
+have no inherent meaning, but serve for the identification
+of language quantities i.e. simple variables, arrays,
+texts, labels, switches, procedures, classes and class
+attributes. Within a procedure declaration identifiers also
+act as formal parameters, in which capacity they may
+represent a literal value or any language quantity except a
+class. All constituent characters are significant in
+distinguishing between identifiers.
+
+<h2>Numbers</h2>
+<pre>
+     unsigned-number
+         =  decimal-number  [ exponent-part ]
+         |  exponent-part
+
+     decimal-number
+         =  unsigned-integer  [ decimal-fraction ]
+         |  decimal-fraction
+
+     decimal-fraction
+         =  .  unsigned-integer
+
+     exponent-part
+         =  ( &amp; | &amp;&amp; )  [ + | - ]  unsigned-integer
+
+     unsigned-integer
+         =  digit  { digit | _ }
+         |  radix R radix-digit { radix-digit | _ }
+
+     radix
+         =  2 | 4 | 8 | 16
+
+     radix-digit
+         =  digit | A | B | C | D | E | F
+</pre>
+<p>
+Decimal numbers have their conventional meaning. The
+exponent part is a scale factor expressed as an integral
+power of 10.</p>
+
+<p>
+Unsigned integers are normally expressed in decimal digits.
+Unsigned integers of radix 2, 4, 8, or 16 may be expressed
+as shown. The radix digits A through F express radix 16
+digits 10 through 15 (decimal). The radix determines the
+legality and the interpretation of a radix digit in an
+obvious manner.</p>
+
+<p>
+An unsigned number which is an unsigned integer is of type <u>integer</u>. Otherwise, if an unsigned number contains an
+exponent part with a double ampersand (&amp;&amp;) it is of type <u>long</u> <u>real</u>, else it is of type
+<u>real</u>.<br>
+<br>
+<u>Examples</u></p>
+<pre>
+     2&amp;1    2.0&amp;+1   .2&amp;2   20.0   200&amp;-1   - represent same <b>real</b> value (20.0)
+     2.345_678&amp;&amp;0                           - <b>long</b> <b>real</b> value (2.345678)
+</pre>
+
+<h2>Strings</h2>
+<pre>
+     string
+         =  simple-string { string-separator simple-string }
+
+     string-separator
+         =  token-separator  { token-separator }
+
+     simple-string
+         =  &quot; { ISO-code | non-quote-character | &quot;&quot; } &quot;
+
+     ISO-code
+         =  !  digit  [ digit ]  [ digit ]  !
+
+     non-quote-character
+         =  ...
+</pre>
+
+A non-quote-character is
+
+<ul>
+  <li>any printing character (incl. space) except the
+           string qoute ". Such a character represents
+           itself.</li>
+</ul>
+<p>
+A simple string must be contained within a single program
+line. Long strings are included as a sequence of simple
+strings separated by token separators.</p>
+<p>
+In order to include a complete 8-bit coded character set,
+any character may be represented within a string by an
+integer, its isocode, corresponding to its bit combination.
+An isocode cannot consist of more than three digits, and it
+must be less than 256. If these conditions are not
+satisfied, the construction is interpreted as a character
+sequence. The string quote may, however, also be
+represented in simple strings by two consecutive quotes
+(see the last example below). Observe that, as a
+consequence of the definitional conventions given earlier
+in this chapter, no spaces may intervene between such a
+pair of string quotes.</p>
+<p><u>Examples</u></p>
+<pre>
+                The string:               represents:
+
+                &quot;Ab&quot;  &quot;cde&quot;               Abcde
+                &quot;AB&quot; <end-of-line> &quot;CDE&quot;  ABCDE
+                &quot;!2!ABCDE!3!&quot;             ABCDE enclosed by STX and ETX
+                &quot;!2&quot; &quot;!ABCDE!&quot; &quot;3!&quot;       !2!ABCDE!3!
+                &quot;AB&quot;&quot; C&quot;&quot;DE&quot;              AB&quot; C&quot;DE
+</pre>
+<h2>Character constants</h2>
+<pre>
+     character-constant
+         =  '  character-designator  '
+
+     character-designator
+         =  ISO-code
+         |  non-quote-character
+         |  &quot;
+</pre>
+<p>
+A character constant is either a single printing character
+or it is an ISO-code - in both cases surrounded by
+character quotes (' - ISO 646 code 2/7).</p>
+<p>
+Within the data processing system, characters are
+represented by values according to some
+implementation-defined code. This code also defines the
+collating sequence used when comparing character (and text)
+values by means of relational operators.</p>
+<h2>Comment convention</h2>
+<p>
+For the purpose of annotating the program proper comments
+may be included in a program. The substitution of <b>end</b> for
+an end-comment, or a space for a direct comment does not
+alter the meaning of a program.</p>
+<div align="center">
+  <table border="0" width="100%" cellspacing="1">
+    <tr>
+      <td width="7%" align="center" valign="top">
+        <p align="left"><u>Note</u>:</p>
+      </td>
+      <td width="94%" align="center">
+        <p align="left"> As a consequence of 1.8.1 and 1.8.2 comments cannot
+      be nested. It is understood that the comment
+      structure encountered first in a program when reading
+      from left to right has precedence in being replaced
+      over later structures contained by the sequence.</td>
+    </tr>
+  </table>
+</div>
+<h3>End comment</h3>
+<p>
+The key word <b>end</b> may be followed by any sequence of
+characters and separation of lines not containing any of
+the special symbols <b>end</b>, <b>else</b>, <b>when</b>, <b>otherwise</b>, or ";".
+This sequence (excluding the delimiting special symbol, but
+including the initial end) constitutes an end-comment.</p>
+<h3>Direct comment</h3>
+<p>
+The special symbol "!" (exclamation mark) followed by any
+sequence of characters or separation of lines not
+containing ";" (semicolon), and delimited by semicolon, is
+treated as a comment if the exclamation mark does not occur
+within a character constant or a simple string (in which
+cases it may either represent itself or act as a code
+quote), or within a comment.</p>
+<div align="center">
+  <table border="0" width="100%" cellspacing="1">
+    <tr>
+      <td width="7%" align="center" valign="top">
+        <p align="left"><u>Note</u>:</p>
+      </td>
+      <td width="94%" align="center">
+        <p align="left"> The delimiting semicolon is considered part of a
+      direct comment and thus takes part in the<br>
+      substitution.</td>
+    </tr>
+  </table>
+</div>
+<p><u>Example</u></p>
+<pre>
+            <b>if</b> B <b>then</b> <b>begin</b> ... <b>end</b> !then; <b>else</b> ...
+</pre>
+<p>
+is not valid since the ! is part of an end-comment. Thus
+";" will act as a statement separator (and no statement can
+start with <u>else</u>).</p>
+<h2>Token separators</h2>
+<pre>
+     format-effector
+         =  BS  |  HT  |  LF  |  VT  |  FF  |  CR
+</pre>
+<p>
+BS, HT, LF, VT, FF, and CR represent the characters thus
+named in table 1.3. A format effector in general acts as a
+space. In addition, an implementation may define some
+additional action to be taken (such as tabulation when
+listing the program); such action has no significance for
+the meaning of the program.</p>
+<pre>
+     token-separator
+         =  ...
+</pre>
+<p>
+A token-separator is</p>
+<ul>
+  <li>a direct comment, or</li>
+  <li>a space (except in simple strings and character
+           constants), or</li>
+  <li>a format effector (except as noted for spaces),
+           or</li>
+  <li>the separation of consecutive lines.</li>
+</ul>
+<p>
+Zero or more token separators may occur between any two
+consecutive tokens, or before the first token of a program
+text. At least one token separator must occur between any
+pair of consecutive tokens made up of identifiers, key
+words, simple strings or unsigned numbers. No token
+separators may occur within tokens.</p>
+<h2>Program interchange and lexical alternatives</h2>
+<p>
+In order to ease portability of SIMULA programs, a common
+representation has been adopted for the language. This
+representation is used throughout this standard except for
+the following conventions adopted for typographical
+reasons:</p>
+<ul>
+  <li>In order to emphasise the use of the language keywords,
+    these are printed in a special manner.</li>
+  <li>Identifiers printed in upper case within this document
+    represent quantities which are inaccessible to the
+    user. Such identifiers are used for definitional
+    purposes, they may or may not have actual counterparts
+    in an implementation of the language.</li>
+  <li>Program fragments may contain the ellipsis (...)
+    instead of valid constructs, where it is either obvious
+    from the context what the construct should be or the
+    intended meaning cannot be expressed in a simple manner
+    within the language.</li>
+</ul>
+<h3>Alternate representation of some symbols</h3>
+<p>
+The representation for lexical tokens and separators given
+in 1.2 to 1.9 constitutes a standard representation for
+these tokens and separators. This standard representation
+is recommended for program interchange.</p>
+<p>
+For historical reasons the following alternatives have been
+defined. All processors that have the required characters
+in their character set must provide both the standard and
+the alternate representations, and there is no distinction
+made between corresponding tokens or separators.</p>
+<p>
+The alternate representations for the tokens are</p>
+<pre>
+           standard token   alternative representation
+
+                 &lt;                    <b>lt</b>
+                 &lt;=                   <b>le</b>
+                 =                    <b>eq</b>
+                 &gt;=                   <b>ge</b>
+                 &gt;                    <b>gt</b>
+                 &lt;&gt;                   <b>ne</b>
+                 !                  <b>comment</b>
+</pre>
+</body>
+
+</html>

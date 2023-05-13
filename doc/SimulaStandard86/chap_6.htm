@@ -1,0 +1,126 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="../includes/standard.css">
+<title>Chapter 6: Program modules</title>
+</head>
+<body>
+<h1>Chapter 6<br>
+PROGRAM MODULES</h1>
+<pre>
+     SIMULA-source-module
+         =  [ external-head ]
+            (  program  | procedure-declaration  |  class-declaration )
+</pre>
+ <p>Program modules constitute compilable programs, procedure declarations, and
+ class declarations.
+
+ <p><b>Example</b>:
+<pre>
+      <b>external</b> <b>class</b> b, c;  ! external head of class e;
+      b <b>class</b> e(f); <b>ref</b> (c)f;
+      <b>begin</b>
+         <b>external</b> <b>class</b> d;
+         <b>external</b> <b>procedure</b> aproc;
+         <b>ref</b> (d) dref;
+         dref :- <b>new</b> d;
+         aproc(dref);
+      <b>end</b> class e;
+
+</pre>
+<h2>External declarations</h2>
+<pre>
+     external-head
+         =  external-declaration ;  { external-declaration ; }
+
+     external-declaration
+         =  external-procedure-declaration  |  external-class-declaration
+</pre>
+ <p>An external declaration is a substitute for a complete introduction of the
+ corresponding source module referred to, including its external head. In the
+ case where multiple but identical external declarations occur as a consequence
+ of this rule, this declaration will be incorporated only once.
+
+ <p><b>Note</b>: An uncommitted occurrence of a standard identifier within a source
+       module refers to the declaration of that identifier within the class
+       ENVIRONMENT or BASICIO, implicitly enclosing the main program (see
+       chapters 9 and 10), with the exception of class identifiers (see 5.5.1).<br>
+
+       If a class identifier is referenced before the body of a separately
+       compiled procedure or class declaration, or in a program block prefix,
+       then this identifier must be declared in the external head.
+<h2>The main program</h2>
+<pre>
+     program
+         =  statement
+</pre>
+ <p>The statement of the main program is implicitly enclosed in a prefixed block
+ as described in chapter 10.
+
+
+<h2>External procedure declaration</h2>
+<pre>
+     external-procedure-declaration
+         =  <b>external</b>  [ kind ]  [ type ]  <b>procedure</b>  external-list
+         |  <b>external</b> kind <b>procedure</b> external-item procedure-specification
+
+     kind
+         =  identifier
+
+     procedure-specification
+         =  <b>is</b>  procedure-declaration
+</pre>
+ <p>The kind of an external procedure declaration may indicate the source language
+ in which the separately compiled procedure is written (e.g assembly, Cobol,
+ Fortran, PL1 etc.). The kind must be empty if this language is Simula. The
+ interpretation of kind (if given) is implementation-dependent.
+
+ <p>If an external procedure declaration contains a procedure specification, the
+ procedure body of the procedure declaration must be empty. This specifies a
+ procedure whose actual body, which embodies the algorithm required, is
+ supplied in a separate (non-Simula) module. The procedure heading of the
+ procedure declaration will determine the procedure identifier (function
+ designator) to be used within the source module in which the external
+ declaration occurs, as well as the type, order, and transmission mode of the
+ parameters.
+
+ <p>A non-Simula procedure cannot be used as an actual parameter corresponding to
+ a formal procedure.
+
+
+<h2>External class declaration</h2>
+<pre>
+     external-class-declaration
+         =  <b>external</b>  <b>class</b>  external-list
+</pre>
+ <p>An implementation may restrict the number of block levels at which an external
+ class declaration may occur.
+
+ <p><b>Note</b>: As a consequence of 5.5.1 all classes belonging to the prefix chain of a
+       separately compiled class must be declared in the same block as this
+       class. However, this need not be done explicitly; an external
+       declaration of a separately compiled class implicitly declares all
+       classes in its prefix chain (since these will be declared in the
+       external head of the class in question).
+
+<h2>Module identification</h2>
+<pre>
+     external-list
+         =  external-item  { , external-item }
+
+     external-item
+         =  identifier  [ = external-identification ]
+
+     external-identification
+         =  string
+</pre>
+ <p>The identifier of an external item must be identical to the identifier of the
+ corresponding separately compiled class or Simula procedure.
+
+ <p>An external item may introduce an external identification to identify the
+ separately compiled module with respect to the environment. The interpretation
+ of the external identification string is implementation-dependent, as is the
+ identification of the module in question in case no external identification is
+ given.
+</pre>
+</body>
+</html>

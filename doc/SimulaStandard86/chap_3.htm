@@ -1,0 +1,919 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="../includes/standard.css">
+<title>Chapter 3: Expressions</title>
+</head>
+<body>
+<h1>Chapter 3<br>
+EXPRESSIONS</h1>
+<pre>
+     expression
+         =  value-expression
+         |  reference-expression
+         |  designational-expression
+
+     value-expression
+         =  arithmetic-expression
+         |  Boolean-expression
+         |  character-expression
+
+     reference-expression
+         =  object-expression
+         |  text-expression
+</pre>
+ <p>The primary constituents of programs describing algorithmic processes are
+ expressions. Constituents of these expressions, except for certain delimiters,
+ are constants, variables, function designators, labels, class and attribute
+ identifiers, switch designators and elementary operators. Since the syntactic
+ definition of both variables and function designators (see below) contain
+ expressions, the definition of expressions and their constituents is
+ necessarily recursive.
+
+ <p>A value expression is a rule for obtaining a value.
+
+ <p>An object expression is a rule for obtaining an object reference.
+
+ <p>A text expression is a rule for obtaining an identification of a text variable
+ (and thereby a text reference).
+
+ <p>A designational expression is a rule for obtaining a reference to a program
+ point.
+
+ <p>Any value expression or reference expression has an associated type, which
+ is textually defined.
+<h2>Variables</h2>
+<pre>
+     variable
+         =  simple-variable-1
+         |  subscripted-variable
+
+     simple-variable-1
+         =  identifier-1
+
+     subscripted-variable
+         =  array-identifier-1  &quot;(&quot;  subscript-list  &quot;)&quot;
+
+     array-identifier-1
+         =  identifier-1
+
+     subscript-list
+         =  subscript-expression  {  ,  subscript-expression }
+
+     subscript-expression
+         =  arithmetic-expression
+</pre>
+ <p>A variable local to a block instance is a memory device whose "contents" are
+ either a value or a reference, according to the type of the variable. The
+ contents of a variable may be changed by an appropriate assignment operation,
+ see 4.1. A reference is a piece of information which identifies a value,
+ called the "referenced" value. The distinction between a reference and the
+ referenced value is determined by context.
+
+ <p>Variables are of two kinds, corresponding to the values being represented,
+ namely value type variables and reference type variables.
+
+ <p>A value type variable has a value which is the contents of the variable. A
+ reference type variable is said to have a value which is the one referenced by
+ the contents of the variable.
+
+ <p>The value of an array identifier is the ordered set of values of the
+ corresponding array of subscripted variables.
+
+ <p><b>Examples</b>
+<pre>
+           delta
+           a17
+           q(7,2)
+           x(sin(n*pi/2),q(3,n,4))
+</pre>
+<h3>Simple variables</h3>
+
+ <p>A simple-variable-1 is any variable which is not a subscripted variable. The
+ corresponding values are described in chapter 2.
+
+ <p><b>Note</b>: Certain syntax classes (such as simple-variable-1) are marked with
+       a "-1". The corresponding program terms may contain a remote identifier
+       (see 5.5.6).
+
+ <p>Value type variables have values of integer type, real type, <b>Boolean</b> or
+ <b>character</b>.
+
+ <p>An object reference variable has an object as its value (or the value <b>none</b>).
+ Text variables are described below.
+
+<h3>Text variables</h3>
+
+ <p>A text variable is conceptually an instance of a composite structure with four
+ constituent components (attributes):
+<pre>
+       <b>ref</b> (TEXTOBJ) OBJ;
+       <b>integer</b> START, LENGTH, POS;
+</pre>
+ <p>Let X be a text variable. Then X.OBJ, X.START, X.LENGTH and X.POS denote the
+ components of X, respectively. These four components are not directly
+ accessible to the user. Instead, certain properties of a text variable are
+ represented by procedures accessible through the dot notation. These procedures
+ are described in chapter 8.
+
+ <p>The components OBJ, START and LENGTH constitute the text reference part of the
+ variable. They identify the frame referenced (see 2.5.1). POS is used for
+ accessing the individual characters of the frame referenced (see 9.2).
+
+ <p>The components of a text variable always satisfy one of the following two sets
+ of conditions:
+<pre>
+     1)  OBJ   =/= <b>none</b>
+         START  &gt;= 1
+         LENGTH &gt;= 1
+         START + LENGTH &lt;= OBJ.SIZE + 1
+         1 &lt;= POS &lt;= LENGTH + 1
+
+     2)  OBJ   == <b>none</b>
+         START  = 1
+         LENGTH = 0
+         POS    = 1
+</pre>
+ <p>The latter alternative defines the contents of a variable which references no
+ frame. Note that this alternative thereby defines the special text reference
+ <b>notext</b>.
+<h3>Array elements</h3>
+
+ <p>Subscripted variables designate values which are components of multi-
+ dimensional arrays. Each arithmetic expression of the subscript list occupies
+ one subscript position of the subscripted variable and is called a subscript.
+ The complete list of subscripts is enclosed by the subscript parentheses ( ) .
+ The array component referred to by a subscripted variable is specified by the
+ actual value of its subscripts.
+
+ <p>Each subscript position acts like a variable of type <b>integer</b> and the
+ evaluation of the subscript is understood to be equivalent to an assignment to
+ this fictitious variable. The value of the subscripted variable is defined
+ only if the actual integer value of each subscript expression is within the
+ associated subscript bounds of the array. A subscript expression value outside
+ its associated bounds causes a run time error.
+
+<h3>Function designators</h3>
+<pre>
+     function-designator
+         =  procedure-identifier-1  [ actual-parameter-part ]
+
+     procedure-identifier-1
+         =  identifier-1
+
+     actual-parameter-part
+         =  &quot;(&quot;  actual-parameter  {  ,  actual-parameter  }  &quot;)&quot;
+
+     actual-parameter
+         =  expression
+         |  array-identifier-1
+         |  switch-identifier
+         |  procedure-identifier-1
+</pre>
+ <p>A function designator defines a value which results through the application of
+ a given set of rules defined by a procedure declaration (see 5.4) to a fixed
+ set of actual parameters. The rules governing specification of actual
+ parameters are given in 4.6.
+
+ <p><b>Note</b>: Not every procedure declaration defines rules for determining the
+       value of a function designator (cf. 5.4.1).
+
+ <p><b>Examples</b>
+<pre>
+           sin(a-b)
+           j(v+s,n)
+           r
+           ss(s-5, !Temperature; T, !Pressure; P)
+           compile (&quot;( := )&quot;, !Stack; q)
+</pre>
+<h3>Remote identifiers</h3>
+<pre>
+     identifier-1
+         =  identifier
+         |  remote-identifier
+
+     remote-identifier
+         =  simple-object-expression  .  attribute-identifier
+         |  text-primary  .  attribute-identifier
+
+     attribute-identifier
+         =  identifier
+</pre>
+ <p>Let X be a simple object expression qualified by the class C, and let A be an
+ appropriate attribute identifier. Then the remote identifier "X.A", if valid,
+ is an attribute identification whose object is the value X and whose
+ qualification is C (cf. 5.5.6).
+
+ <p>The remote identifier X.A is valid if the following conditions are satisfied:
+<ol>
+<li>The value X is different from <b>none</b>.
+
+<li>The object referenced by X has no <b>class</b> attribute declared
+             at any prefix level equal or outer to that of C.
+</ol>
+ <p><b>Note</b>: Condition 1 corresponds to a check which causes an error if the
+       value of X is <b>none</b>.<br>
+
+       Condition 2 is an ad hoc rule intended to simplify the language and
+       its implementations.
+
+
+ <p>A remote identifier of the form
+<pre>
+       text-primary.attribute-identifier
+</pre>
+ <p>identifies an attribute of the text variable identified by evaluating the text
+ primary, provided that the attribute identifier is one of the procedure
+ identifiers defined in chapter 8.
+
+ <p><b>Note</b>: Even if the text primary references <b>notext</b>, the attribute access
+       is legal (in contrast to object expressions).
+
+ <p><b>Example</b>
+<blockquote>
+ <p>Let P1 and P2 be variables declared and initialized as in example 2 of 4.1.4.
+ Then the value of the expression
+<pre>
+                P1.plus (P2)
+</pre>
+ <p>is a new "point" object which represents the vector sum of P1 and P2. The value
+ of the expression
+<pre>
+                P1 <b>qua</b> polar.plus (P2)
+</pre>
+ <p>is a new "polar" object representing the same vector sum.
+</blockquote>
+<h2>Boolean expressions</h2>
+<pre>
+     Boolean-expression
+         =  simple-Boolean-expression
+         |  if-clause  simple-Boolean-expression  <b>else</b>  Boolean-expression
+
+     simple-Boolean-expression
+         =  Boolean-tertiary  { <b>or</b> <b>else</b>  Boolean-tertiary }
+
+     Boolean-tertiary
+         =  equivalence  { <b>and</b> <b>then</b>  equivalence }
+
+     equivalence
+         =  implication  { <b>eqv</b>  implication }
+
+     implication
+         =  Boolean-term  { <b>imp</b>  Boolean-term }
+
+     Boolean-term
+         =  Boolean-factor  { <b>or</b>  Boolean-factor }
+
+     Boolean-factor
+         =  Boolean-secondary  { <b>and</b>  Boolean-secondary }
+
+     Boolean-secondary
+         =  [ <b>not</b> ]  Boolean-primary
+
+     Boolean-primary
+         =  logical-value
+         |  variable
+         |  function-designator
+         |  relation
+         |  &quot;(&quot;  Boolean-expression  &quot;)&quot;
+</pre>
+ <p>A Boolean expression is of type <b>Boolean</b>. It is a rule for computing a
+ logical value. Except for the operators <b>and</b> <b>then</b> and <b>or</b> <b>else</b> (see 3.4)
+ the semantics are entirely analogous to those given for arithmetic expressions.
+
+ <p>Variables and function designators entered as Boolean primaries must be of type
+ <b>Boolean</b>.
+
+ <p><b>Examples</b>
+<pre>
+            x = -2
+            Y&gt;v  <b>or</b>  z&lt;q
+            a+b&gt; -5  <b>and</b>  z-d&gt;q**2
+            p  <b>and</b>  <b>not</b> q  <b>or</b>  x&lt;&gt;y
+            t.more  <b>and</b> <b>then</b>  t.getchar
+            x == <b>none</b>  <b>or</b> <b>else</b>  x.a&gt;0
+            <b>if</b>  k&lt;1  <b>then</b>  s&gt;w  <b>else</b> h&lt;=c
+            <b>if</b>  <b>if</b>  <b>if</b> a <b>then</b> b <b>else</b> c
+                <b>then</b> d <b>else</b> f
+              <b>then</b> g <b>else</b> h&lt;k
+</pre>
+<h2>Relations</h2>
+<pre>
+     relation
+         =  arithmetic-relation
+         |  character-relation
+         |  text-value-relation
+         |  object-relation
+         |  object-reference-relation
+         |  text-reference-relation
+
+     value-relational-operator
+         =  &lt;  |  &lt;=  |  =  |  &gt;=  |  &gt;  |  &lt;&gt;
+
+     reference-comparator
+         =  ==  |  =/=
+</pre>
+ <p>The value relational operators have the conventional meaning. Their specific
+ interpretation is described below in connection to the respective types. The
+ reference comparators have the same priority level as the relational operators.
+
+<h3>Arithmetic relations</h3>
+<pre>
+     arithmetic-relation
+         =  simple-arithmetic-expression
+            value-relational-operator  simple-arithmetic-expression
+</pre>
+ <p>The relational operators &lt;, &lt;=, =, &gt;=, &gt; and &lt;&gt; have their conventional meaning
+ (less than, less than or equal to, equal to, greater than or equal to, greater
+ than, not equal to). Arithmetic relations assume the value <b>true</b> whenever the
+ corresponding relation is satisfied for the expressions involved, otherwise
+ <b>false</b>. If the two constituent expressions are of different arithmetic types
+ conversion to the type with maximum value range is assumed. Consequently
+ overflow cannot occur during the evaluation.
+
+<h3>Character relations</h3>
+<pre>
+     character-relation
+         =  simple-character-expression
+            value-relational-operator  simple-character-expression
+</pre>
+ <p>Character values may be compared for equality and inequality and ranked with
+ respect to the collating sequence. Let X and Y be simple character expressions,
+ and let rel be any value relational operator. Then the relation  "X rel Y"  has
+ the same Boolean value as the relation  "rank(X) rel rank(Y)".
+
+ <p><b>Note</b>: Because of variations in collating sequences the value of a character
+       relation (and by implication that of a text relation, see below) is
+       implementation-defined. Implementation-independent comparison of
+       character values is obtained by using the procedure "isorank".
+<h3>Text value relations</h3>
+<pre>
+     text-value-relation
+         =  simple-text-expression
+            value-relational-operator  simple-text-expression
+</pre>
+ <p>Two text values are equal if they are both empty, or if they are both instances
+ of the same character sequence, otherwise they are unequal.
+
+ <p>A text value T ranks lower than a text value U if and only if they are unequal
+ and one of the following conditions is fulfilled:
+<ol>
+<li>T is empty.
+<li>U is equal to T followed by one or more characters.
+<li>When comparing T and U from left to right the first non-matching
+         character in T ranks lower than the corresponding character in U.
+</ol>
+<h3>Object relations</h3>
+<pre>
+     object-relation
+         =  simple-object-expression  <b>is</b>  class-identifier
+         |  simple-object-expression  <b>in</b>  class-identifier
+</pre>
+ <p>The operators <b>is</b> and <b>in</b> may be used to test the class membership of an
+ object.
+
+ <p>The relation "X <b>is</b> C" has the value <b>true</b> if X refers to an object belonging
+ to the class C, otherwise the value is <b>false</b>.
+
+ <p>The relation "X <b>in</b> C" has the value <b>true</b> if X refers to an object belonging
+ to a class C or a class inner to C, otherwise the value is <b>false</b>.
+
+<h3>Object reference relations</h3>
+<pre>
+     object-reference-relation
+         =  simple-object-expression
+            reference-comparator  simple-object-expression
+</pre>
+ <p>The reference comparators == and =/= may be used for the comparison of
+ references (as distinct from the corresponding referenced values). Two object
+ references X and Y are said to be "identical" if they refer to the same object
+ or if they both are <b>none</b>. In that event the relation "X==Y" has the value
+ <b>true</b>, otherwise the value is <b>false</b>.
+
+ <p>The value of the relation "X=/=Y" is the negation of that of "X==Y".
+<h3>Text reference relations</h3>
+<pre>
+     text-reference-relation
+         =  simple-text-expression
+            reference-comparator  simple-text-expression
+</pre>
+ <p>Let T and U be text variables. The relation "T==U" is equivalent to
+<pre>
+     T.OBJ == U.OBJ  <b>and</b>  T.START = U.START  <b>and</b>  T.LENGTH = U.LENGTH
+</pre>
+ <p><b>Note</b>: The POS components are ignored. Also observe that the relations
+       "T=/=U" and "T=U" may both have the value <b>true</b>. (T and U reference
+       different text frames which contain the same text value.)
+
+ <p>The following relations are all true (cf. 2.5)
+<pre>
+     T = <b>notext</b>  <b>eqv</b>  T == <b>notext</b>
+     &quot;&quot; == <b>notext</b>
+     &quot;ABC&quot; =/= &quot;ABC&quot;              (different occurrences)
+</pre>
+ <p><b>Example</b>
+<pre>
+     <b>class</b> C; <b>begin</b> <b>text</b> T; T:- &quot;ABC&quot; <b>end</b>;
+</pre>
+ <p>The relation "<b>new</b> C.T == <b>new</b> C.T" is <b>true</b> here.
+
+<h2>The logical operators</h2>
+
+ <p>The meaning of the logical operators <b>not</b>, <b>and</b>, <b>or</b>, <b>imp</b>, and <b>eqv</b> is
+ given by the following function table:
+<pre>
+        b1               <b>false</b>     <b>false</b>     <b>true</b>      <b>true</b>
+        b2               <b>false</b>     <b>true</b>      <b>false</b>     <b>true</b>
+      ---------------------------------------------------------
+        <b>not</b>  b1          <b>true</b>      <b>true</b>      <b>false</b>     <b>false</b>
+        b1 <b>and</b> b2        <b>false</b>     <b>false</b>     <b>false</b>     <b>true</b>
+        b1 <b>or</b> b2         <b>false</b>     <b>true</b>      <b>true</b>      <b>true</b>
+        b1 <b>imp</b> b2        <b>true</b>      <b>true</b>      <b>false</b>     <b>true</b>
+        b1 <b>eqv</b> b2        <b>true</b>      <b>false</b>     <b>false</b>     <b>true</b>
+     ----------------------------------------------------------
+</pre>
+ <p>The operation "b1 <b>and</b> <b>then</b> b2" denotes "conditional and". If the value of
+ b1 is <b>false</b> the operation yields the result <b>false</b>, otherwise it yields the
+ result of evaluating b2.
+
+ <p>The operation "b1 <b>or</b> <b>else</b> b2" denotes "conditional or". If the value of b1
+ is <b>true</b> the operator yields the result <b>true</b>, otherwise it yields the result
+ of evaluating b2.
+
+ <p><b>Note</b>: The value of "b1 <b>and</b> <b>then</b> b2" is given by textual substitution of
+       the Boolean expression "(<b>if</b> b1 <b>then</b> b2 <b>else</b> <b>false</b>)". Similarly,
+       the operation "b1 <b>or</b> <b>else</b> b2" is defined by substitution of "(<b>if</b> b1
+       <b>then</b> <b>true</b> <b>else</b> b2)". These definitions imply that the evaluation
+       of the second operand is suppressed when the evaluation result is
+       already evident from the value of the first operand alone.
+
+<h3>Precedence of Boolean operators</h3>
+
+ <p>The sequence of operations within one expression is generally from left to
+ right, with the following additional rules.
+
+ <p>According to the syntax given in 3.2 the following rules of precedence hold:
+<pre>
+         first:    non-Boolean expressions
+         second:   &lt;  &lt;=  =  &gt;=  &gt;  &lt;&gt;  ==  =/=  <b>is</b>  <b>in</b>
+         third:    <b>not</b>
+         fourth:   <b>and</b>
+         fifth:    <b>or</b>
+         sixth:    <b>imp</b>
+         seventh:  <b>eqv</b>
+         eighth:   <b>and</b> <b>then</b>
+         nineth:   <b>or</b> <b>else</b>
+</pre>
+ <p>The use of parentheses is interpreted in the sense given in 3.5.2.
+<h2>Arithmetic expressions</h2>
+<pre>
+     arithmetic-expression
+         =  simple-arithmetic-expression
+         |  if-clause  simple-arithmetic-expression
+            <b>else</b>  arithmetic-expression
+
+     simple-arithmetic-expression
+         =  [ + | - ]  term  {  ( + | - )  term }
+
+     term
+         =  factor  {  ( * | / | // )  factor }
+
+     factor
+         =  primary  { **  primary }
+
+     primary
+         =  unsigned-number
+         |  variable
+         |  function-designator
+         |  &quot;(&quot;  arithmetic-expression  &quot;)&quot;
+</pre>
+ <p>An arithmetic expression is a rule for computing a numerical value. In the case
+ of simple arithmetic expressions this value is obtained by executing the
+ indicated arithmetic operations on the actual numerical values of the primaries
+ of the expression, as explained in detail in 3.5.1 below. The value of a
+ primary is obvious in the case of numbers. For variables it is the current
+ value (assigned last in the dynamic sense), and for function designators it is
+ the value arising from the computing rules defining the procedure when applied
+ to the current values of the procedure parameters given in the expression.
+ Finally, for arithmetic expressions enclosed by parentheses the value must
+ through a recursive analysis be expressed in terms of the values of primaries
+ of the other three kinds.
+
+ <p>In the more general arithmetic expressions, which include if-clauses, one out
+ of several simple arithmetic expressions is selected on the basis of the actual
+ values of the Boolean expressions (see 3.2). This selection is made as follows:
+ The Boolean expressions of the if-clauses are evaluated one by one in sequence
+ from left to right until one having the value <b>true</b> is found. The value of the
+ arithmetic expression is then the value of the first arithmetic expression
+ following this Boolean (the longest arithmetic expression found in this
+ position is understood). If none of the Boolean expressions has the value
+ <b>true</b>, then the value of the arithmetic expression is the value of the
+ expression following the final <b>else</b>.
+
+ <p>In evaluating an arithmetic expression, all primaries within that expression
+ are evaluated with the following exceptions:
+<ul>
+<li>Primaries that occur within any expression governed by an if-clause
+   but not selected by it.
+
+<li>Primaries that occur within a Boolean expression<ol>
+<li>after the operator <b>or</b> <b>else</b> when the evaluation of a preceding
+      Boolean tertiary results in <b>false</b>,  or
+<li>after the operator <b>and</b> <b>then</b> when the evaluation of a preceding
+      equivalence results in <b>false</b>.
+</ol>
+<li>Primaries that occur after a function designator, and the evaluation of
+   the function terminates with a goto-statement. In this case the
+   evaluation of the arithmetic expression is abandoned.
+</ul>
+ <p>Primaries are always evaluated in strict lexical order.
+
+ <p><b>Examples</b>:
+<pre>
+     Primaries:  7.394_604&amp;-8
+                 sum
+                 w(i + 2,8)
+                 cos( y + z*3.141_592_653_589_793_324&amp;&amp;0 )
+                 ( a - 3/y + vu**8)
+
+     Factors:    omega
+                 sum ** cos( y + z*3 )
+                 7.394&amp;-8 ** w(i + 2,8) ** ( a - 3/y + vu ** 8 )
+
+     Terms:      u
+                 omega * sum ** cos(y + z*3)/7.394&amp;-8 ** (a - 3/y + vu**8)
+
+     Simple arithmetic expression:
+                 u - yu + omega*sum**cos(y+z*3)/7.394&amp;-8 **(a-3/y+vu**8)
+
+     Arithmetic expressions:
+                 w*u - q(s+cu)**2
+                 <b>if</b>  q&gt;0  <b>then</b>  s+3*q//a  <b>else</b>  2*s+3*q
+                 <b>if</b>  a&lt;0  <b>then</b>  u+v  <b>else</b>   <b>if</b>  a*b&gt;17  <b>then</b>  u/v
+                      <b>else</b>   <b>if</b>  k  &gt;=  y  <b>then</b>  v/u  <b>else</b>  0
+                 0.57&amp;12 * a( n*(n-1)//2 ,0 )
+                 ( a*arctan(y)+z ) ** (7+Q)
+                 <b>if</b>  q  <b>then</b>  n-1  <b>else</b>  n
+</pre>
+<h3>Operators and types</h3>
+
+ <p>Apart from the Boolean expressions of if-clauses, the constituents of
+ arithmetic expressions must be of arithmetic types. The meaning of the basic
+ operators and the types of the expressions to which they lead are given by the
+ following rules, where "i" and "j" are of integer type, "r" of real type, and
+ "x" is any arithmetic type:
+<ul>
+<li>The operators +, -, and * have their conventional meaning.
+
+<li>The operator / denotes real division. Any operand of integer type is
+     converted before the operation. Division by zero constitutes an error.
+
+<li>The operator // denotes integer division. It is valid only for integer
+     type operands (no implicit conversion). The meaning of "i//j" is defined
+     by:
+<pre>
+         <b>integer</b> <b>procedure</b>  DIV(i, j);  <b>integer</b>  i, j;
+         <b>if</b> j=0 <b>then</b>  error(&quot;...&quot; !div by zero;)
+         <b>else</b> <b>begin</b> <b>integer</b> m, n;
+            m:= 0;  n:= abs(i);
+            <b>for</b>  n:= n - abs(j) <b>while</b> n&gt;=0 <b>do</b> m:= m + 1;
+            DIV:= <b>if</b> i&lt;0 <b>eqv</b> j&gt;0 <b>then</b> -m <b>else</b> m
+         <b>end</b> DIV;
+</pre>
+<li>The operator ** denotes exponentiation. The value and type of the
+     operation depends upon the types of the operands as follows:
+<pre>
+   x**r:  &lt;type of r&gt; <b>procedure</b> EXPR(x,r); <arithmetic type> x; <real type> r;
+          <b>if</b>    x&lt;0 <b>or</b> (x=0 <b>and</b> r&lt;=0.0)
+          <b>then</b>  error(&quot;...&quot; !EXPR undefined;);
+          <b>else</b>  EXPR := <b>if</b>  x&gt;0  <b>then</b>  exp(r*ln(x)) <b>else</b>  0.0;
+
+   i**j:  <b>integer</b> <b>procedure</b> EXPI(i,j); <b>integer</b> i,j;
+          <b>if</b> j&lt;0 <b>or</b> i=0 <b>and</b> j=0 <b>then</b> error(&quot;...&quot; !EXPI undefined;)
+          <b>else</b> <b>begin</b> <b>integer</b> k,result;
+             result:= 1;
+             <b>for</b>  k:= 1 <b>step</b> 1 <b>until</b> j <b>do</b> result:= result*i;
+             EXPI:= result
+          <b>end</b> EXPI
+
+   r**i:  &lt;type of r&gt;  <b>procedure</b> EXPN(r, i); <real type> r; <b>integer</b> i;
+          <b>if</b> i=0 <b>and</b> r=0.0 <b>then</b> error(&quot;...&quot; !EXPN undefined;)
+          <b>else</b> <b>begin</b>  <type of r> result; <b>integer</b> n;
+             result:= 1.0;
+             <b>for</b> n:= abs(i) <b>step</b> -1 <b>until</b> 1 <b>do</b> result := result*r;
+             EXPN:= <b>if</b> i&lt;0 <b>then</b> 1.0/result <b>else</b> result
+          <b>end</b> EXPN;
+</pre></ul>
+<p>It is understood that the finite deviations of using the exponentiation
+     operator may be different from those of using the procedures EXPR and EXPN.
+
+ <p>If the operands of an arithmetic operator are of different types, or both
+ <b>short</b> <b>integer</b>, an appropriate type conversion function is understood to
+ be automatically invoked, except as explicitly noted above, before the
+ operation is evaluated as follows:
+<blockquote>
+<p>     If one operand is of type <b>long</b> <b>real</b> the other is converted to
+     <b>long</b> <b>real</b>, else if one operand is of type <b>real</b> the other is
+     converted to <b>real</b>, else <b>short</b> <b>integer</b> operands are converted to
+     <b>integer</b>.
+</blockquote>
+ <p><b>Note</b>: The result of evaluating an arithmetic expression can never
+       be of type <b>short</b> <b>integer</b>.
+
+ <p>Conversion from <b>short</b> <b>integer</b> to <b>integer</b> is always exact. Conversion from
+ an integer type to a real type is exact within an implementation-defined range
+ which includes zero. Conversion from <b>real</b> to <b>long</b> <b>real</b> is exact within
+ an implementation-defined range which includes zero.
+
+ <p>The type of the operation (and by repeated application also the type of the
+ arithmetic expression) is a consequence of the type conversion rule as follows:
+<pre>
+                     SI  I   R   LR
+
+             SI      I   I   R   LR           SI: <b>short</b> <b>integer</b>
+             I       I   I   R   LR           I:  <b>integer</b>
+             R       R   R   R   LR           R:  <b>real</b>
+             LR      LR  LR  LR  LR           LR: <b>long</b> <b>real</b>
+</pre>
+
+ <p>The rule also determines the type of a conditional expression, i.e. an
+ arithmetic expression of the form
+ <blockquote>
+ <p>"<b>if</b> B <b>then</b> SAE <b>else</b> AE":
+
+ <p>The expression is of type <b>long</b> <b>real</b> if either SAE or AE is <b>long</b> <b>real</b>.
+ Otherwise, if either SAE or AE is of type <b>real</b>, the type of the expression
+ is <b>real</b>, else the type is <b>integer</b>.
+</blockquote>
+ <p><b>Note</b>: The type of a conditional expression is independent of the actual
+       value of the Boolean expression, i.e. it is completely determined by
+       the program text.
+
+<h3>Precedence of arithmetic operators</h3>
+
+ <p>The sequence of operations within one expression is generally from left to
+ right, with the following additional rules:
+
+ <p>According to the syntax given in 3.3.1 the following rules of precedence hold:
+<pre>
+                   first:    **
+                   second:   *  /  //
+                   third:    +  -
+</pre>
+ <p>The expression between a left parentheses and the matching right parenthesis is
+ evaluated by itself and this value is used in subsequent calculations.
+ Consequently the desired order of execution of operations within an expression
+ can always be arranged by appropriate positioning of parentheses.
+
+ <p><b>Note</b>: The order of evaluation of the primaries is not influenced by the
+       use of parenthesis.
+
+<h3>Arithmetics of real quantities</h3>
+
+ <p>Numbers and variables of real type must be interpreted in the sense of
+ numerical analysis, i.e. as entities defined inherently with only a finite
+ accuracy. Similarly, the possibility of the occurrence of a finite deviation
+ from the mathematically defined result in any arithmetic expression is
+ explicitly understood. No exact arithmetic will be specified, however, and it
+ is indeed understood that, different implementations may evaluate arithmetic
+ expressions differently. The control of the possible consequences of such
+ differences must be carried out by the methods of numerical analysis. This
+ control must be considered a part of the process to be described, and is
+ therefore expressed in terms of the language itself.
+
+<h2>Character expressions</h2>
+<pre>
+     character-expression
+         =  simple-character-expression
+         |  if-clause  simple-character-expression
+            <b>else</b>  character-expression
+
+     simple-character-expression
+         =  character-constant
+         |   variable
+         |   function-designator
+         |   &quot;(&quot;  character-expression  &quot;)&quot;
+</pre>
+ <p>A character expression is of type <b>character</b>.  It is a rule for obtaining a
+ character value (see 2.1.3). Apart from possible if-clauses, all constituents
+ of a character expression must be of type <b>character</b>.
+<h2>Text expressions</h2>
+<pre>
+     text-expression
+         =  simple-text-expression
+         |  if-clause  simple-text-expression  <b>else</b>  text-expression
+
+     simple-text-expression
+         =  text-primary  {  &amp;  text-primary  }
+
+     text-primary
+         =  <b>notext</b>
+         |  string
+         |  variable
+         |  function-designator
+         |  &quot;(&quot;  text-expression  &quot;)&quot;
+</pre>
+ <p>A text expression is of type <b>text</b>. It is a rule for obtaining an
+ identification of a text variable. Apart from possible if-clauses, all
+ constituents of a text expression must be of type <b>text</b>.
+
+ <p>Each textual occurrence of a non-empty string corresponds to a unique constant
+ main text frame. A given occurrence always references that same frame, while
+ different occurrences of the same non-empty string always reference different
+ text frames.
+
+ <p>The empty string ("") is textually equivalent to <b>notext</b>.
+
+<h3>Text concatenation</h3>
+
+ <p>The operator & permits text concatenation. The simple text expression
+ "TP1 & TP2 & ... & TPn", where TPi is a text primary (1<=i<=n), references a
+ new alterable main frame whose contents is formed by concatenating copies of
+ the frames referenced by TP1, TP2, ... , TPn (in that order). The expression
+ is equivalent to CONCATENATE_n(T1,T2,...,Tn) defined by
+<pre>
+     <b>text</b> <b>procedure</b> CONCATENATE_ _n(T1,T2,...,Tn);  <b>text</b> T1,T2,...,Tn;
+     <b>begin</b>  <b>text</b> temp;
+         CONCATENATE_ _n :- temp :- blanks(T1.length+T2.length+ ... +Tn.length);
+         temp.sub(1,t1.length) := T1;
+         temp.sub(1+T1.length,T2.length) := T2;
+         ...
+         temp.sub(1+T1.length+T2.length+... ,Tn.length) := Tn;
+     <b>end</b>;
+</pre>
+ <p><b>Note</b>: It follows that the text primary constituents of a simple text
+       expression are evaluated in strict lexical order. The evaluation
+       of Ti may influence the result of evaluating Tj, if i&lt;j (due to
+       the specified "by reference" transmission of parameters to the
+       procedures CONCATENATE_n).<br>
+
+       Observe further that it follows from the syntax (cfr. 3.1.5) that
+       . is evaluated before &, thus the two expressions
+       "T1 & T2.sub(1,2) & T3.main" and "T1 & (T2.sub(1,2)) & (T3.main)"
+       are equivalent.
+
+<h3>Text expression evaluation</h3>
+
+ <p>The result of evaluating
+<ul>
+<li><b>notext</b>, or an empty string, identifies an anonymous text variable
+     whose contents are defined by (2) of 3.1.2.
+
+<li>a non-empty string identifies an anonymous text variable which
+     references a constant text frame whose value is the internal
+     representation of the external character sequence. This frame is
+     always a main frame. The POS component of the anonymous variable
+     equals 1.
+
+<li>a text variable identifies the variable itself.
+
+<li>a text function designator identifies an anonymous text variable
+     which contains a copy of the final contents of the text variable
+     associated with the procedure identifier during the execution of the
+     procedure in question.
+
+<li>a text expression enclosed by parentheses identifies an anonymous
+     text variable which contains a copy of (the contents of) the text
+     variable identified when evaluating the same expression without
+     parentheses.
+
+<li>a conditional text expression identifies an anonymous text variable
+     which contains a copy of (the contents of) the text variable
+     identified by the branch which was selected for evaluation.
+</ul>
+ <p>For further information on the text concept, see chapter 8.
+<h2>Object expressions</h2>
+<pre>
+     object-expression
+         =  simple-object-expression
+         |  if-clause  simple-object-expression  <b>else</b>  object-expression
+
+     simple-object-expression
+         =  <b>none</b>
+         |  variable
+         |  function-designator
+         |  object-generator
+         |  local-object
+         |  qualified-object
+         |  &quot;(&quot;  object-expression  &quot;)&quot;
+
+     object-generator
+         =  <b>new</b>  class-identifier  [  actual-parameter-part  ]
+
+     local-object
+         =  <b>this</b>  class-identifier
+
+     qualified-object
+         =  simple-object-expression  <b>qua</b>  class-identifier
+</pre>
+ <p>An object expression is of type <b>ref</b>(qualification). It is a rule for
+ obtaining a reference to an object. The value of the expression is the
+ referenced object or <b>none</b>. Apart from a possible if-clause all constituents
+ must be of object reference type.
+
+<h3>Qualification</h3>
+
+ <p>The qualification of an object expression is defined by the following rules:
+<ol>
+<li>The expression <b>none</b> is qualified by a fictitious class
+         which is inner to all declared classes.
+
+<li>A variable or function designator is qualified as stated in
+         the declaration (or specification, see below) of the
+         variable or array or procedure in question.
+
+<li>An object generator, local object or qualified object is
+         qualified by the class of the identifier following the
+         symbol <b>new</b>, <b>this</b> or <b>qua</b> respectively.
+
+<li>A conditional object expression is qualified by the
+         innermost class which includes the qualifications of both
+         alternatives. If there is no such class, the expression is
+         illegal.
+
+<li>Any formal parameter of object reference type is qualified
+         according to its specification regardless of the
+         qualification of the corresponding actual parameter.
+
+<li>The qualification of a function designator whose procedure
+         identifier is that of a virtual quantity depends on the
+         access level (see 5.5.5). The qualification is that
+         of the matching declaration, if any, occurring at the innermost
+         prefix level equal or outer to the access level, or, if no
+         such match exists, it is that of the virtual specification.
+</ol>
+<h3>Object generator</h3>
+
+ <p>The value of an object generator is the object generated as the result of its
+ evaluation. See 4.7.
+
+<h3>Local objects</h3>
+
+ <p>A local object "<b>this</b> C" is valid provided that the expression is used within
+<ol>
+<li>the class body of C or that of any subclass of C, or
+
+<li>a connection block whose block qualification is C or a
+         subclass of C (see 4.8).
+</ol>
+ <p>The value of a local object in a given context is the object which is, or is
+ connected by, the smallest textually enclosing block instance in which the
+ local object is valid. If there is no such block the local object is illegal
+ (in the given context). For an instance of a procedure or a class body,
+ "textually enclosing" means containing its declaration.
+
+<h3>Instantaneous qualification</h3>
+
+ <p>Let X represent any simple reference expression, and let C and D be class
+ identifiers such that D is the qualification of X. The qualified object
+ "X <b>qua</b> C" is then a legal object expression, provided that C is outer to or
+ equal to D or is a subclass of D. Otherwise, since C and D belong to disjoint
+ prefix sequences, the expression is illegal.
+
+ <p>If the value of X is <b>none</b> or is an object belonging to a class outer to C,
+ the evaluation of X <b>qua</b> C constitutes a run-time error. Otherwise, the value
+ of X <b>qua</b> C is that of X. Instantaneous qualification restricts or extends the
+ visibility of attributes of a concatenated class object accessible through
+ inspection or remote accessing (cf. 3.1.5 and 4.8).
+<h2>Designational expressions</h2>
+<pre>
+     designational-expression
+         =  simple-designational-expression
+         |  if-clause  simple-designational-expression
+            <b>else</b>  designational-expression
+
+     simple-designational-expression
+         =  label
+         |  switch-designator
+         |  &quot;(&quot;  designational-expression  &quot;)&quot;
+
+     switch-designator
+         =  switch-identifier  &quot;(&quot;  subscript-expression  &quot;)&quot;
+
+     switch-identifier
+         =  identifier
+
+     label
+         =  identifier
+</pre>
+ <p>A designational expression is a rule for obtaining a reference to a program
+ point. The principle of the evaluation is entirely analogous to that of
+ arithmetic expressions. In the general case the Boolean expressions of the
+ if-clauses select a simple designational expression. If this is a label the
+ desired result is already found. A switch designator refers to the
+ corresponding switch declaration and by the actual numerical value of its
+ subscript expression selects one of the designational expressions listed in the
+ switch declaration by counting these from left to right. Since the expression
+ thus selected may again be a switch designator this evaluation is obviously a
+ recursive process.
+
+ <p>The evaluation of the subscript expression is analogous to that of subscripted
+ variables. The value of a switch designator is defined only if the subscript
+ expression assumes one of the values 1, 2, ... , n, where n is the number of
+ entries in the switch list. A value outside this range causes a run time
+ error.
+
+ <p><b>Note</b>: It is a consequence of the syntax that class attributes which are
+       labels or switches cannot be accessed by the dot notation.
+</pre>
+</body>
+</html>

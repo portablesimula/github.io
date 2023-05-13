@@ -1,0 +1,544 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="../includes/standard.css">
+<title>Chapter 9: THE CLASS "ENVIRONMENT"</title>
+</head>
+<body>
+<h1>Chapter 9<br>
+THE CLASS "ENVIRONMENT"</h1>
+
+ <p>The purpose of the environmental class is to encapsulate all constants,
+ procedures and classes which are accessible to all source modules. It contains
+ procedures for mathematical functions, text generation, random drawing, etc.
+
+ <p>The general structure of ENVIRONMENT is
+
+<pre>
+  <b>class</b> ENVIRONMENT;
+  <b>begin</b> <b>character</b> CURRENTLOWTEN, CURRENTDECIMALMARK;
+
+       Basic operations ........................................ 9.1
+          Procedures mod, rem, abs, sign, entier,
+            addepsilon, subepsilon.
+       Text utilities .......................................... 9.2
+          Procedures copy, blanks, char, isochar, rank, isorank,
+            digit, letter, lowten, decimalmark, upcase, lowcase.
+       Scheduling .............................................. 9.3
+          Procedures call (7.3.2), resume (7.3.3).
+       Mathematical functions .................................. 9.4
+          Procedures sqrt, sin, cos, tan, cotan, arcsin, arccos,
+            arctan, arctan2, sinh, cosh, tanh, ln, log10, exp.
+       Extremum functions ...................................... 9.5
+          Procedures max, min.
+       Environmental enquiries ................................. 9.6
+          Procedure sourceline.
+          Constants  maxrank, maxint, minint, maxreal, minreal,
+            maxlongreal, minlongreal, simulaid.
+       Error control ........................................... 9.7
+          Procedure error.
+       Array quantities ........................................ 9.8
+          Procedures upperbound, lowerbound.
+       Random drawing .......................................... 9.9
+          Procedures draw, randint, uniform, normal, negexp,
+            Poisson, Erlang, discrete, linear, histd.
+       Calendar and timing utilities ........................... 9.10
+          Procedures datetime, cputime, clocktime.
+       Miscellaneous utilities ................................. 9.11
+          Procedure histo.
+       Standard system classes ................................. 9.12
+          Classes simset (ch. 11), simulation (ch. 12).
+
+        CURRENTDECIMALMARK := '.';
+        CURRENTLOWTEN      := '&amp;'
+
+  <b>end</b> ENVIRONMENT;
+</pre>
+<h2>Basic operations</h2>
+<pre>
+  MOD          <b>integer</b> <b>procedure</b> mod(i,j);   <b>integer</b> i,j;
+               <b>begin</b> <b>integer</b> res;
+                  res := i - (i//j)*j;
+                  mod := <b>if</b> res = 0 <b>then</b> 0
+                         <b>else</b> <b>if</b> sign(res) &lt;&gt; sign(j) <b>then</b> res+j
+                         <b>else</b> res
+               <b>end</b> mod;
+
+               The result is the mathematical modulo value of the parameters.
+
+  REM          <b>integer</b> <b>procedure</b> rem(i,j);   <b>integer</b> i,j;
+                  rem := i - (i//j)*j;
+
+               The result is the remainder of an integer division.
+
+  ABS          &lt;type of e&gt; <b>procedure</b> abs(e);   <arithmetic-type> e;
+                  abs := <b>if</b> e &gt;= 0 <b>then</b> e <b>else</b> -e;
+
+               The result is the absolute value of the parameter.
+
+  SIGN         <b>integer</b> <b>procedure</b> sign(e);   <arithmetic-type> e;
+                  sign := <b>if</b>      e &gt; 0 <b>then</b>  1
+                          <b>else</b> <b>if</b> e &lt; 0 <b>then</b> -1 <b>else</b> 0;
+
+               The result is zero if the parameter is zero, one if the
+               parameter is positive, and minus one otherwise.
+
+  ENTIER       <b>integer</b> <b>procedure</b> entier(r); &lt;real-type&gt; r;
+               <b>begin</b> <b>integer</b> j;
+                  j := r;             ! implied conversion of &quot;r&quot; to integer ;
+                  entier:= <b>if</b> j &gt; r   ! implied conversion of &quot;j&quot; to real ;
+                           <b>then</b> j-1 <b>else</b> j
+               <b>end</b> entier;
+
+               The result is the integer &quot;floor&quot; of a real type item, the value
+               always being less than or equal to the parameter. Thus,
+               entier(1.8) returns the value 1, while entier(-1.8) returns -2.
+
+  ADDEPSILON   &lt;type of e&gt; <b>procedure</b> addepsilon(e);   &lt;real-type&gt; e;
+                  addepsilon := e + ... ; ! see below;
+
+  SUBEPSILON   &lt;type of e&gt; <b>procedure</b> subepsilon(e);   &lt;real-type&gt; e;
+                  subepsilon := e - ... ; ! see below;
+
+               The result type is that of the parameter. The result is the
+               value of the parameter incremented (addepsilon) or decremented
+               (subepsilon) by the smallest positive value, such that the
+               result is not equal to the parameter within the precision of
+               the implementation. Thus, for all positive values of &quot;eps&quot;,
+
+                   E-eps &lt;= subepsilon(E) &lt; E &lt; addepsilon(E) &lt;= E+eps
+</pre>
+<h2>Text utilities</h2>
+<pre>
+  COPY         See 8.3.
+  BLANKS       See 8.3.
+
+
+  CHAR         <b>character</b> <b>procedure</b> char(i);  <b>integer</b> i;
+                  char := ... ;
+
+               The result is the character obtained by converting the parameter
+               according to the implementation-defined coding of characters.
+               The parameter must be in the range 0..maxrank.
+
+
+  ISOCHAR      <b>character</b> <b>procedure</b> isochar(i);  <b>integer</b> i;
+                  isochar := ... ;
+
+               The result is the character obtained by converting the parameter
+               according to the ISO 2022 standard character code.
+               The parameter must be in the range 0..255.
+
+
+  RANK         <b>integer</b> <b>procedure</b> rank(c);  <b>character</b> c;
+                  rank := ... ;
+
+               The result is the integer obtained by converting the parameter
+               according to the implementation-defined character code.
+
+
+  ISORANK      <b>integer</b> <b>procedure</b> isorank(c);  <b>character</b> c;
+                  isorank := ... ;
+
+               The result is the integer obtained by converting the parameter
+               according to the ISO 2022 standard character code.
+
+
+  DIGIT        <b>Boolean</b> <b>procedure</b> digit(c);  <b>character</b> c;
+                  digit := ... ;
+
+               The result is <b>true</b> if the parameter is a decimal digit.
+
+
+  LETTER       <b>Boolean</b> <b>procedure</b> letter(c);  <b>character</b> c;
+                  letter := ... ;
+
+               The result is true if the parameter is a letter of the English
+               alphabet ('a' ... 'z', 'A' ... 'Z').
+
+
+  LOWTEN       <b>character</b> <b>procedure</b> lowten(c);  <b>character</b> c;
+                  <b>if</b> ... ! c is illegal as lowten;
+                  <b>then</b>  error(&quot;...&quot; ! Lowten error ;)
+                  <b>else</b> <b>begin</b>
+                     lowten:= CURRENTLOWTEN; CURRENTLOWTEN:= c
+                   <b>end</b> lowten;
+
+               Changes the value of the current lowten character to that of the
+               parameter. The previous value is returned. Illegal parameters are
+
+                 digits, plus (&quot;+&quot;), minus (&quot;-&quot;), dot (&quot;.&quot;), comma (&quot;,&quot;),
+                 control characters (i.e. ISO code&lt;32), DEL (ISO code 127),
+                 and all characters with ISO code greater than 127.
+
+
+  DECIMALMARK  <b>character</b> <b>procedure</b> decimalmark(c);   <b>character</b> c;
+                  <b>if</b> c &lt;&gt; '.' <b>and</b> <b>then</b> c &lt;&gt; ','
+                  <b>then</b> error(&quot;...&quot; ! Decimalmark error ;)
+                  <b>else</b> <b>begin</b>
+                     decimalmark:= CURRENTDECIMALMARK; CURRENTDECIMALMARK:= c
+                  <b>end</b> decimalmark;
+
+               Changes the value of the decimal point character used by the text
+               (de)editing procedures (cf. 8.7 and 8.8). The previous value is
+               returned. The only legal parameter values are dot and comma.
+
+
+  UPCASE       <b>text</b> <b>procedure</b> upcase(t);   <b>text</b> t;
+               <b>begin</b>  t.setpos(1); upcase:- t;  ... <b>end</b>;
+
+               Convert the letters in the text parameter to their upper case
+               representation. Only letters of the English alphabet are
+               converted. The result is a reference to the parameter.
+
+
+  LOWCASE      <b>text</b> <b>procedure</b> lowcase(t); <b>text</b> t;
+               <b>begin</b>  t.setpos(1); lowcase:- t; ... <b>end</b>;
+
+               Convert the letters in the text parameter to their lower case
+               representation. Only letters of the English alphabet are
+               converted. The result is a reference to the parameter.
+</pre>
+<h2>Scheduling</h2>
+<pre>
+  CALL         See 7.3.2.
+  RESUME       See 7.3.3.
+</pre>
+ <p>In addition the procedure "detach" (7.3.1) is an attribute of any class.
+<h2>Mathematical functions</h2>
+
+ <p>These procedures return <b>long</b> <b>real</b> results whenever a parameter is of this
+ type. Otherwise a <b>real</b> type result is returned (cf. 3.3.1).
+
+ <p>All procedures return real type approximations to the associated mathematical
+ functions. Their exact definitions (concerning precision, allowed parameter
+ values etc.) are implementation-defined. The procedures return best possible
+ approximations to the exact mathematical results.
+
+ <p>The trigonometric functions deal with angles expressed in radians.
+<pre>
+  SQRT     &lt;real-type&gt; <b>procedure</b> sqrt(r);      &lt;real-type&gt; r;
+
+  SIN      &lt;real-type&gt; <b>procedure</b> sin(r);       &lt;real-type&gt; r;
+
+  COS      &lt;real-type&gt; <b>procedure</b> cos(r);       &lt;real-type&gt; r;
+
+  TAN      &lt;real-type&gt; <b>procedure</b> tan(r);       &lt;real-type&gt; r;
+
+  COTAN    &lt;real-type&gt; <b>procedure</b> cotan(r);     &lt;real-type&gt; r;
+
+  ARCSIN   &lt;real-type&gt; <b>procedure</b> arcsin(r);    &lt;real-type&gt; r;
+
+  ARCCOS   &lt;real-type&gt; <b>procedure</b> arccos(r);    &lt;real-type&gt; r;
+
+  ARCTAN   &lt;real-type&gt; <b>procedure</b> arctan(r);    &lt;real-type&gt; r;
+
+           The result is in the range (0,pi/2) for non-negative parameters and
+           in the range (-pi/2,0) for negative parameters.
+
+  ARCTAN2  &lt;real-type&gt; <b>procedure</b> arctan2(y,x); &lt;real-type&gt; y,x;
+
+           The result is in the range(-pi,pi) and a negative value is returned
+           whenever y is negative. Positive y values always result in a
+           positive result, while a zero value returns zero if x is positive
+           and pi if x is negative. If both y and x are zero, a runtime error
+           occurs.
+
+  SINH     &lt;real-type&gt; <b>procedure</b> sinh(r);      &lt;real-type&gt; r;
+
+  COSH     &lt;real-type&gt; <b>procedure</b> cosh(r);      &lt;real-type&gt; r;
+
+  TANH     &lt;real-type&gt; <b>procedure</b> tanh(r);      &lt;real-type&gt; r;
+
+  LN       &lt;real-type&gt; <b>procedure</b> ln(r);        &lt;real-type&gt; r;
+
+  LOG10    &lt;real-type&gt; <b>procedure</b> log10(r);     &lt;real-type&gt; r;
+
+  EXP      &lt;real-type&gt; <b>procedure</b> exp(r);       &lt;real-type&gt; r;
+</pre>
+<h2>Extremum functions</h2>
+
+  MAX          &lt;type&gt; <b>procedure</b> max(i1,i2);   &lt;type&gt; i1; &lt;type&gt; i2;
+
+  MIN          &lt;type&gt; <b>procedure</b> min(i1,i2);   &lt;type&gt; i1; &lt;type&gt; i2;
+
+               The value is the greater (MAX) or lesser (MIN) of the two
+               parameter values. Legal parameter types are <b>text</b>, <b>character</b>,
+               real type and integer type. The type of the result conforms
+               to the rules of 3.3.1.
+<h2>Environmental enquiries</h2>
+<pre>
+  SOURCELINE   <b>integer</b> <b>procedure</b> sourceline;
+
+               The value indicates the line on which the procedure call occurs.
+               The interpretation of this number is implementation-defined.
+
+
+  MAXLONGREAL  <b>long</b> <b>real</b> maxlongreal = ... ,
+  MINLONGREAL            minlongreal = ... ;
+
+  MAXREAL      <b>real</b> maxreal = ... ,
+  MINREAL           minreal = ... ;
+
+  MAXRANK      <b>integer</b> maxrank = ... ,  !the largest legal argument to char;
+  MAXINT               maxint  = ... ,
+  MININT               minint  = ... ;
+
+               These constants define some of the implementation
+               characteristics. The &quot;max...&quot; (&quot;min...&quot;) constants have the
+               largest (smallest) values possible for their type.
+
+
+  SIMULAID     <b>text</b> simulaid = ... ; ! See below ;
+</pre>
+ <p>The value of "simulaid" is an implementation defined string of the following
+ general format:
+<pre>
+    &lt;simid&gt;!!!&lt;siteid&gt;!!!&lt;OS&gt;!!!&lt;CPU&gt;!!!&lt;user&gt;!!!&lt;job&gt;!!!&lt;acc&gt;!!!&lt;prog&gt;
+
+  &lt;simid&gt;:   Identification of the SIMULA system (name, version etc.)
+  &lt;siteid&gt;:  Identification of the installation (e.g. organisation name)
+  &lt;OS&gt;:      Operating system identification (name, version, etc.)
+  &lt;CPU&gt;:     Host system identification (manufacturer, name, number, etc.)
+  &lt;user&gt;:    User identification
+  &lt;job&gt;:     Job identification (session number)
+  &lt;acc&gt;:     Account identification
+  &lt;prog&gt;:    Identification of the executing task or program
+</pre>
+<h2>Error control</h2>
+<pre>
+  ERROR        <b>procedure</b> error(t);   <b>text</b> t;
+               <b>begin</b> ... display text &quot;t&quot; and stop program...
+               <b>end</b> error;
+</pre>
+ <p>The procedure "error" stops the execution of the program as if a runtime error
+ has occurred and presents the contents of the text parameter on the diagnostic
+ channel (normally the controlling terminal).
+
+<h2>Array quantities</h2>
+<pre>
+  LOWERBOUND   <b>integer</b> <b>procedure</b> lowerbound(a,i);
+               &lt;type&gt; <b>array</b> a; <b>integer</b> i;
+
+  UPPERBOUND   <b>integer</b> <b>procedure</b> upperbound(a,i);
+               &lt;type&gt; <b>array</b> a; <b>integer</b> i;
+</pre>
+ <p>The procedure "lowerbound" ("upperbound") returns the lower (upper) bound of
+ the dimension of the given array corresponding to the given index. The first
+ dimension has index one, the next two, etc. An index less than one or greater
+ than the number of dimensions of the given array constitutes a run time error.
+<h2>Random drawing</h2>
+
+ <p>All random drawing procedures of SIMULA are based on the technique of
+ obtaining "basic drawings" from the uniform distribution in the interval &lt;0,1&gt;.
+
+<h3>Pseudo-random number streams</h3>
+
+ <p>A basic drawing replaces the value of a specified <b>integer</b> variable, say U, by
+ a new value according to an implementation-defined algorithm.
+<blockquote>
+     <p>As an example, the following algorithm may be suitable for binary
+     computers:
+<pre>
+                   U(i+1) = remainder ((U(i) * 5**(2*p+1)) // 2**n)
+</pre>
+     <p>where U(i) is the i'th value of U, n is an integer related to the size
+     of a computer word and p is a positive integer. It can be proved that,
+     if U(0) is a positive odd integer, the same is true for all U(i) and
+     the sequence U(0), U(1), U(2), ... is cyclic with period 2**n-2. (The
+     last two bits of U remain constant, while the other n-2 take on all
+     possible combinations). Thus there are two sequences - one in the range
+     (1:2**n-3) and the other in (3:2**n-1).
+
+     <p>It is a property of this algorithm that any successor to a stream number
+     U(i), e.g. U(i+m), can be computed using modular arithmetic in log2(m)
+     steps.
+
+     <p>The real numbers u(i) = U(i) * 2**(-n) are fractions in the range
+     <0,1>. The sequence u(1), u(2), ... is called a "stream" of pseudo-
+     random numbers, and u(i) (i = l,2, ...) is the result of the i'th basic
+     drawing in the stream U. A stream is completely determined by the
+     initial value U(0) of the corresponding integer variable. Nevertheless,
+     it is a "good approximation" to a sequence of truly random drawings.
+</blockquote>
+ <p>By reversing the sign of the non-zero initial value U(0) of a stream variable,
+ the antithetic drawings 1-u(1), 1-u(2), ... should be obtained. In certain
+ situations it can be proved that means obtained from samples based on
+ antithetic drawings have a smaller variance than those obtained from
+ uncorrelated streams. This can be used to reduce the sample size required to
+ obtain reliable estimates.
+
+<h3>Random drawing procedures</h3>
+
+ <p>The following procedures all perform a random drawing of some kind. "Normal",
+ "draw", "randint", "uniform", "negexp", "discrete", "linear" and "histd" always
+ perform the operation by means of one single basic drawing, i.e. the procedure
+ has the side effect of advancing the specified stream by one step. The
+ necessary type conversions are effected for the actual parameters, with the
+ exception of the last one. The latter must always be an <b>integer</b> variable
+ specifying a pseudo-random number stream. Note, that it must not be a procedure
+ parameter transferred by <b>name</b>.
+<pre>
+  DRAW         <b>Boolean</b> <b>procedure</b> draw (a,U);
+               <b>name</b> U; <b>long</b> <b>real</b> a; <b>integer</b> U;
+
+               The value is <b>true</b> with the probability a, <b>false</b> with the
+               probability 1 - a. It is always <b>true</b> if a &gt;= 1 and always
+               <b>false</b> if a &lt;= 0.
+
+  RANDINT      <b>integer</b> <b>procedure</b> randint (a,b,U);
+               <b>name</b> U; <b>integer</b> a,b,U;
+
+               The value is one of the integers a, a+1, ..., b-1, b with equal
+               probability. If b &lt; a, the call constitutes an error.
+
+  UNIFORM      <b>long</b> <b>real</b> <b>procedure</b> uniform (a,b,U);
+               <b>name</b> U; <b>long</b> <b>real</b> a,b; <b>integer</b> U;
+
+               The value is uniformly distributed in the interval a &lt;= u &lt; b.
+               If b &lt; a, the call constitutes an error.
+
+  NORMAL       <b>long</b> <b>real</b> <b>procedure</b> normal (a,b,U);
+               <b>name</b> U; <b>long</b> <b>real</b> a,b; <b>integer</b> U;
+
+               The value is normally distributed with mean a and standard
+               deviation b. An approximation formula may be used for the normal
+               distribution function.
+
+  NEGEXP       <b>long</b> <b>real</b> <b>procedure</b> negexp (a,U);
+               <b>name</b> U; <b>long</b> <b>real</b> a; <b>integer</b> U;
+
+               The value is a drawing from the negative exponential distribution
+               with mean 1/a, defined by -ln(u)/a, where u is a basic drawing.
+               This is the same as a random &quot;waiting time&quot; in a Poisson
+               distributed arrival pattern with expected number of arrivals per
+               time unit equal to a. If a is non-positive, a runtime error
+               occurs.
+
+  POISSON      <b>integer</b> <b>procedure</b> Poisson (a,U);
+               <b>name</b> U; <b>long</b> <b>real</b> a; <b>integer</b> U;
+
+               The value is a drawing from the Poisson distribution with
+               parameter a. It is obtained by n+1 basic drawings, u(i), where n
+               is the function value. n is defined as the smallest non-negative
+               integer for which
+                           u(0) * u(1) * ... * u(n)  &lt;  e**(-a)
+
+               The validity of the formula follows from the equivalent condition
+                       -ln(u(0)) - ln(u(1)) - ... - ln(u(n))  &gt;  1
+               where the left hand side is seen to be a sum of &quot;waiting times&quot;
+               drawn from the corresponding negative exponential distribution.
+
+               When the parameter a is greater than some implementation-defined
+               value, for instance 20.0, the value may be approximated by
+               entier(normal(a,sqrt(a),U) + 0.5) or, when this is negative, by
+               zero.
+
+  ERLANG       <b>long</b> <b>real</b> <b>procedure</b> Erlang (a,b,U);
+               <b>name</b> U; <b>long</b> <b>real</b> a,b; <b>integer</b> U;
+
+               The value is a drawing from the Erlang distribution with mean 1/a
+               and standard deviation 1/(a*sqrt(b)). It is defined by b basic
+               drawings u(i), if b is an integer value,
+
+                    - ( ln(u(1)) + ln(u(2)) + ... + ln(u(b)) )  /  (a*b)
+
+               and by c+1 basic drawings u(i) otherwise, where c is equal to
+               entier(b),
+
+                 - ( ln(u(1)) + ... + ln(u(c)) + (b-c)*ln(u(c+1)) ) / (a*b)
+
+               Both a and b must be greater than zero.
+
+               The last formula represents an approximation.
+
+  DISCRETE     <b>integer</b> <b>procedure</b> discrete (A,U);
+               <b>name</b> U; &lt;real-type&gt; <b>array</b> A; <b>integer</b> U;
+
+               The one-dimensional array A, augmented by the element 1 to the
+               right, is interpreted as a step function of the subscript,
+               defining a discrete (cumulative) distribution function.
+
+               The function value satisfies
+                   lowerbound(A,1) &lt;= discrete(A,U) &lt;= upperbound(A,1)+1.
+
+               It is defined as the smallest i such that A(i) &gt; u, where u is a
+               basic drawing and A(upperbound(A,1)+1) = 1.
+
+  LINEAR       <b>long</b> <b>real</b> <b>procedure</b> linear (A,B,U);
+               <b>name</b> U; &lt;real-type&gt; <b>array</b> A,B; <b>integer</b> U;
+
+               The value is a drawing from a (cumulative) distribution function
+               F, which is obtained by linear interpolation in a non-equidistant
+               table defined by A and B, such that A(i) = F(B(i)).
+
+               It is assumed that A and B are one-dimensional arrays of the
+               same length, that the first and last elements of A are equal
+               to 0 and 1 respectively and that A(i) &gt;= A(j) and B(i) &gt; B(j)
+               for i&gt;j. If any of these conditions are not satisfied, the effect
+               is implementation-defined.
+
+               The steps in the function evaluation are:
+
+               l. draw a uniform &lt;0,1&gt; random number, u.
+
+               2. determine the lowest value of i, for which
+
+                       A(i-1) &lt;= u &lt;= A(i)
+
+               3. compute D = A(i) - A(i-1)
+
+               4. if D = 0:  linear = B(i-1)
+                  if D &lt;&gt; 0: linear = B(i-1) + (B(i) - B(i-1))*(u-A(i-1))/D
+
+  HISTD        <b>integer</b> <b>procedure</b> histd (A,U);
+               <b>name</b> U; &lt;real-type&gt; <b>array</b> A; <b>integer</b> U;
+
+               The value is an integer in the range (lsb,usb), where lsb and
+               usb are the lower and upper subscript bounds of the
+               one-dimensional array A. The latter is interpreted as a
+               histogram defining the relative frequencies of the values.
+</pre>
+<h2>Calendar and timing utilities</h2>
+<pre>
+  DATETIME:    <b>text</b> <b>procedure</b> datetime;   datetime :- Copy(&quot;...&quot;);
+
+               The value is a text frame containing the current date and time
+               in the form    YYYY-MM-DD HH:MM:SS.sss.... The number of
+               decimals in the field for seconds is implementation-defined.
+
+  CPUTIME:     <b>long</b> <b>real</b> <b>procedure</b> cputime;
+
+               The value is the number of processor seconds spent by the
+               calling program.
+
+  CLOCKTIME:   <b>long</b> <b>real</b> <b>procedure</b> clocktime;
+
+               The value is the number of seconds since midnight.
+</pre>
+<h2>Miscellaneous utilities</h2>
+<pre>
+ HISTO:       <b>procedure</b> histo(A,B,c,d);
+              <b>real</b> <b>array</b> A,B; <b>real</b> c,d;
+</pre>
+ <p>Procedure statement "histo(A,B,c,d)" updates a histogram defined by the
+ one-dimensional arrays A and B according to the observation c with the
+ weight d. A(lba+i) is increased by d, where i is the smallest integer such
+ that c &lt;= B(lbb+i) and lba and lbb are the lower bounds of A and B
+ respectively. If the length of A is not one greater than that of B the
+ effect is implementation-defined. The last element of A corresponds to
+ those observations which are greater than all elements of B.
+
+<h2>Standard system classes</h2>
+
+ <p>The standard system classes are "simset", "simulation" and the I/O classes.
+ They are available at any block level of a program (cfr. 5.5.1).
+
+ <p>Class "simset" contains facilities for list (set) manipulation, see chapter 11.
+
+ <p>Simset <b>class</b> "simulation" contains facilities for discrete event simulation,
+ see chapter 12.
+
+ <p>The I/O classes ("file" and its subclasses) are defined in <b>class</b> BASICIO,
+ see chapter 10.
+</body>
+</html>

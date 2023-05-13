@@ -1,0 +1,500 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="../includes/standard.css">
+<title>Appendix A: SIMULA Syntax</title>
+</head>
+<body>
+<h1>APPENDIX A<br>
+SIMULA Syntax</h1>
+
+
+<h2>Chapter 1: Lexical tokens</h2>
+<pre>
+ letter
+     =  a | b | c | d | e | f | g | h | i
+      | j | k | l | m | n | o | p | q | r
+      | s | t | u | v | w | x | y | z
+      | A | B | C | D | E | F | G | H | I
+      | J | K | L | M | N | O | P | Q | R
+      | S | T | U | V | W | X | Y | Z
+ digit
+     = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+ space
+     =  SP
+ identifier
+     =  letter  { letter  |  digit  |  _ }
+ unsigned-number
+     =  decimal-number  [ exponent-part ]
+     |  exponent-part
+ decimal-number
+     =  unsigned-integer  [ decimal-fraction ]
+     |  decimal-fraction
+ decimal-fraction
+     =  .  unsigned-integer
+ exponent-part
+     =  ( &amp; | &amp;&amp; )  [ + | - ]  unsigned-integer
+ unsigned-integer
+     =  digit  { digit | _ }
+     |  radix R radix-digit { radix-digit | _ }
+ radix
+     =  2 | 4 | 8 | 16
+ radix-digit
+     =  digit | A | B | C | D | E | F
+ string
+     =  simple-string  { string-separator simple-string }
+ string-separator
+     =  token-separator  { token-separator }
+ simple-string
+     =  &quot; { ISO-code | non-quote-character | &quot;&quot; } &quot;
+ ISO-code
+     =  !  digit  [ digit ]  [ digit ]  !
+ non-quote-character
+     =  any printing character (incl. space) except the string qoute &quot;.
+ character-constant
+     =  '  character-designator  '
+ character-designator
+     =  ISO-code
+     |  non-quote-character
+     |  &quot;
+ format-effector
+     =  BS  |  HT  |  LF  |  VT  |  FF  |  CR
+ token-separator
+     =  a direct comment
+     |  a space (except in simple strings and character constants)
+     |  a format effector (except as noted for spaces)
+     |  the separation of consecutive lines
+</pre>
+<h2>Chapter 2: Types and values</h2>
+<pre>
+ type
+     =  value-type
+     |  reference-type
+ value-type
+     =  arithmetic-type
+     |  <b>boolean</b>
+     |  <b>character</b>
+ arithmetic-type
+     =  integer-type
+     |  real-type
+ integer-type
+     =  [ <b>short</b> ]  <b>integer</b>
+ real-type
+     =  [ <b>long</b> ]  <b>real</b>
+ reference-type
+     =  object-reference-type
+     |  <b>text</b>
+ object-reference-type
+     =  <b>ref</b>  &quot;(&quot;  qualification  &quot;)&quot;
+ qualification
+     =  class-identifier
+</pre>
+<h2>Chapter 3: Expressions</h2>
+<pre>
+ expression
+     =  value-expression
+     |  reference-expression
+     |  designational-expression
+ value-expression
+     =  arithmetic-expression
+     |  Boolean-expression
+     |  character-expression
+ reference-expression
+     =  object-expression
+     |  text-expression
+ variable
+     =  simple-variable-1
+     |  subscripted-variable
+ simple-variable-1
+     =  identifier-1
+ subscripted-variable
+     =  array-identifier-1  &quot;(&quot;  subscript-list  &quot;)&quot;
+ array-identifier-1
+     =  identifier-1
+ subscript-list
+     =  subscript-expression  {  ,  subscript-expression }
+ subscript-expression
+     =  arithmetic-expression
+ function-designator
+     =  procedure-identifier-1  [ actual-parameter-part ]
+ procedure-identifier-1
+     =  identifier-1
+ actual-parameter-part
+     =  &quot;(&quot;  actual-parameter  {  ,  actual-parameter  }  &quot;)&quot;
+ actual-parameter
+     =  expression
+     |  array-identifier-1
+     |  switch-identifier
+     |  procedure-identifier-1
+ identifier-1
+     =  identifier
+     |  remote-identifier
+ remote-identifier
+     =  simple-object-expression  .  attribute-identifier
+     |  text-primary  .  attribute-identifier
+ attribute-identifier
+     =  identifier
+ Boolean-expression
+     =  simple-Boolean-expression
+     |  if-clause  simple-Boolean-expression  <b>else</b>  Boolean-expression
+ simple-Boolean-expression
+     =  Boolean-tertiary  { <b>or</b> <b>else</b>  Boolean-tertiary }
+ Boolean-tertiary
+     =  equivalence  { <b>and</b> <b>then</b>  equivalence }
+ equivalence
+     =  implication  { <b>eqv</b>  implication }
+ implication
+     =  Boolean-term  { <b>imp</b>  Boolean-term }
+ Boolean-term
+     =  Boolean-factor  { <b>or</b>  Boolean-factor }
+ Boolean-factor
+     =  Boolean-secondary  { <b>and</b>  Boolean-secondary }
+ Boolean-secondary
+     =  [ <b>not</b> ]  Boolean-primary
+ Boolean-primary
+     =  logical-value
+     |  variable
+     |  function-designator
+     |  relation
+     |  &quot;(&quot;  Boolean-expression  &quot;)&quot;
+ relation
+     =  arithmetic-relation
+     |  character-relation
+     |  text-value-relation
+     |  object-relation
+     |  object-reference-relation
+     |  text-reference-relation
+ value-relational-operator
+     =  &lt;  |  &lt;=  |  =  |  &gt;=  |  &gt;  |  &lt;&gt;
+ reference-comparator
+     =  ==  |  =/=
+ arithmetic-relation
+     =  simple-arithmetic-expression
+        value-relational-operator  simple-arithmetic-expression
+ character-relation
+     =  simple-character-expression
+        value-relational-operator  simple-character-expression
+ text-value-relation
+     =  simple-text-expression
+        value-relational-operator  simple-text-expression
+ object-relation
+     =  simple-object-expression  <b>is</b> class-identifier
+     |  simple-object-expression  <b>in</b>  class-identifier
+ object-reference-relation
+     =  simple-object-expression
+        reference-comparator  simple-object-expression
+ text-reference-relation
+     =  simple-text-expression
+        reference-comparator  simple-text-expression
+ arithmetic-expression
+     =  simple-arithmetic-expression
+     |  if-clause  simple-arithmetic-expression
+        <b>else</b>  arithmetic-expression
+ simple-arithmetic-expression
+     =  [ + | - ]  term  {  ( + | - )  term }
+ term
+     =  factor  {  ( * | / | // )  factor }
+ factor
+     =  primary  { **  primary }
+ primary
+     =  unsigned-number
+     |  variable
+     |  function-designator
+     |  &quot;(&quot;  arithmetic-expression  &quot;)&quot;
+ character-expression
+     =  simple-character-expression
+     |  if-clause  simple-character-expression
+        <b>else</b>  character-expression
+ simple-character-expression
+     =  character-constant
+     |   variable
+     |   function-designator
+     |   &quot;(&quot;  character-expression  &quot;)&quot;
+ text-expression
+     =  simple-text-expression
+     |  if-clause  simple-text-expression  <b>else</b>  text-expression
+ simple-text-expression
+     =  text-primary  { &amp; text-primary }
+ text-primary
+     =  <b>notext</b>
+     |  string
+     |  variable
+     |  function-designator
+     |  &quot;(&quot;  text-expression  &quot;)&quot;
+ object-expression
+     =  simple-object-expression
+     |  if-clause  simple-object-expression  <b>else</b>  object-expression
+ simple-object-expression
+     =  <b>none</b>
+     |  variable
+     |  function-designator
+     |  object-generator
+     |  local-object
+     |  qualified-object
+     |  &quot;(&quot;  object-expression  &quot;)&quot;
+ object-generator
+     =  <b>new</b>  class-identifier  [  actual-parameter-part  ]
+ local-object
+     =  <b>this</b>  class-identifier
+ qualified-object
+     =  simple-object-expression  <b>qua</b>  class-identifier
+ designational-expression
+     =  simple-designational-expression
+     |  if-clause  simple-designational-expression
+        <b>else</b>  designational-expression
+ simple-designational-expression
+     =  label
+     |  switch-designator
+     |  &quot;(&quot;  designational-expression  &quot;)&quot;
+ switch-designator
+     =  switch-identifier  &quot;(&quot;  subscript-expression  &quot;)&quot;
+ switch-identifier
+     =  identifier
+ label
+     =  identifier
+</pre>
+<h2>Chapter 4: Statements</h2>
+<pre>
+ statement
+     =  { label : }  unconditional-statement
+     |  { label : }  conditional-statement
+     |  { label : }  for-statement
+ unconditional-statement
+     =  assignment-statement
+     |  while-statement
+     |  goto-statement
+     |  procedure-statement
+     |  object-generator
+     |  connection-statement
+     |  compound-statement
+     |  block
+     |  dummy-statement
+     |  activation-statement
+ assignment-statement
+     =  value-assignment
+     |  reference-assignment
+ value-assignment
+     =  value-left-part  :=  value-right-part
+ value-left-part
+     =  destination
+     |  simple-text-expression
+ value-right-part
+     =  value-expression
+     |  text-expression
+     |  value-assignment
+ destination
+     =  variable
+     |  procedure-identifier
+ reference-assignment
+     =  reference-left-part  :-  reference-right-part
+ reference-left-part
+     =  destination
+ reference-right-part
+     =  reference-expression
+     |  reference-assignment
+ conditional-statement
+     =  if-clause { label : } unconditional-statement [ <b>else</b> statement ]
+     |  if-clause { label : } for-statement
+ if-clause
+     =  <b>if</b>  Boolean-expression  <b>then</b>
+ while-statement
+     =  <b>while</b>  Boolean-expression  <b>do</b>  statement
+ for-statement
+     =  for-clause  statement
+ for-clause
+     =  <b>for</b>  simple-variable  for-right-part  <b>do</b>
+ simple-variable
+     =  identifier
+ for-right-part
+     =  := value-for-list-element { , value-for-list-element }
+     =  :- reference-for-list-element { , reference-for-list-element }
+ value-for-list-element
+     =  value-expression  [ <b>while</b>  Boolean-expression ]
+     |  text-expression
+     |  arithmetic-expression
+        <b>step</b>  arithmetic-expression  <b>until</b>  arithmetic-expression
+ reference-for-list-element
+     =  reference-expression  [ <b>while</b>  Boolean-expression ]
+ goto-statement
+     =  ( <b>goto</b> | <b>go</b> <b>to</b> )  designational-expression
+ procedure-statement
+     =  procedure-identifier-1  [ actual-parameter-part ]
+ connection-statement
+     =  <b>inspect</b>  object-expression  when-clause  { when-clause }
+        [ otherwise-clause ]
+     |  <b>inspect</b>  object-expression <b>do</b>  connection-block-2
+        [ otherwise-clause ]
+ when-clause
+     =  <b>when</b>  class-identifier  <b>do</b>  connection-block-1
+ otherwise-clause
+     =  <b>otherwise</b>  statement
+ connection-block-1
+     =  statement
+ connection-block-2
+     =  statement
+ compound-statement
+     =  <b>begin</b>  compound-tail
+ compound-tail
+     =  statement  { ; statement }  <b>end</b>
+ block
+     =  subblock
+     |  prefixed-block
+ subblock
+     =  block-head  ;  compound-tail
+ block-head
+     =  <b>begin</b>  declaration  { ; declaration }
+ prefixed-block
+     =  block-prefix  main-block
+ block-prefix
+     =  class-identifier  [ actual-parameter-part ]
+ main-block
+     =  block
+     |  compound-statement
+ dummy-statement
+     =  empty
+</pre>
+<h2>Chapter 5: Declarations</h2>
+<pre>
+ declaration
+     =  simple-variable-declaration
+     |  array-declaration
+     |  switch-declaration
+     |  procedure-declaration
+     |  class-declaration
+     |  external-declaration
+ simple-variable-declaration
+     =  type  type-list
+ type-list
+     =  type-list-element  { , type-list-element }
+ type-list-element
+     =  identifier
+     |  constant-element
+ array-declaration
+     =  [ type ]  <b>array</b>  array-segment  { , array-segment }
+ array-segment
+     =  array-identifier  { , array-identifier }
+        &quot;(&quot;  bound-pair-list  &quot;)&quot;
+ array-identifier
+     =  identifier
+ bound-pair-list
+     =  bound-pair  { , bound-pair }
+ bound-pair
+     =  arithmetic-expression  :  arithmetic-expression
+ switch-declaration
+     =  <b>switch</b>  switch-identifier  :=  switch-list
+ switch-list
+     =  designational-expression  { , designational-expression }
+ procedure-declaration
+     =  [ type ]  <b>procedure</b>  procedure-heading  ;  procedure-body
+ procedure-heading
+     =  procedure-identifier
+        [ formal-parameter-part ; [ mode-part ] specification-part ]
+ procedure-body
+     =  statement
+ procedure-identifier
+     =  identifier
+ formal-parameter-part
+     =  &quot;(&quot;  formal-parameter  { , formal-parameter }  &quot;)&quot;
+ formal-parameter
+     =  identifier
+ specification-part
+     =   specifier identifier-list ; { specifier identifier-list ; }
+ specifier
+     =  type  [ <b>array</b> | <b>procedure</b> ]
+     |  <b>label</b>
+     |  <b>switch</b>
+ mode-part
+     =  name-part  [ value-part ]
+     |  value-part [ name-part ]
+ name-part
+     =  <b>name</b>  identifier-list  ;
+ value-part
+     =  <b>value</b>  identifier-list  ;
+ identifier-list
+     =  identifier  { , identifier }
+ class-declaration
+     =  [ prefix ]  main-part
+ prefix
+     =  class-identifier
+ main-part
+     =  <b>class</b>  class-identifier
+        [ formal-parameter-part  ;  [ value-part ]
+          specification-part ]  ;
+        [ protection-part  ; ]  [ virtual-part  ; ]
+        class-body
+ class-identifier
+     =  identifier
+ class-body
+     =  statement
+     |  split-body
+ split-body
+     =  initial-operations  inner-part  final-operations
+ initial-operations
+     =  ( <b>begin</b> | block-head ; )  { statement ; }
+ inner-part
+     =  { label : }  <b>inner</b>
+ final-operations
+     =  <b>end</b>
+     |  ;  compound-tail
+ virtual-part
+     =  <b>virtual</b>  :  virtual-spec  ;  { virtual-spec  ; }
+ virtual-spec
+     =  specifier  identifier-list
+     |  <b>procedure</b>  procedure-identifier  procedure-specification
+ protection-part
+     =  protection-specification  { ;  protection-specification }
+ protection-specification
+     =  <b>hidden</b>  identifier-list
+     |  <b>protected</b>  identifier-list
+     |  <b>hidden</b> <b>protected</b>  identifier-list
+     |  <b>protected</b> <b>hidden</b>  identifier-list
+ constant-element
+     =  identifier  =  value-expression
+     |  identifier  =  string
+</pre>
+<h2>Chapter 6: Program modules</h2>
+<pre>
+ SIMULA-source-module
+     =  [ external-head ]
+        (  program  |  procedure-declaration  |  class-declaration  )
+ external-head
+     =  external-declaration  ;  { external-declaration  ; }
+ external-declaration
+     =  external-procedure-declaration
+     |  external-class-declaration
+ program
+     =  statement
+ external-procedure-declaration
+     =  <b>external</b>  [ kind ]  [ type ]  <b>procedure</b>  external-list
+     |  <b>external</b> kind <b>procedure</b>  external-item procedure-specification
+ kind
+     =  identifier
+ procedure-specification
+     =  <b>is</b>  procedure-declaration
+ external-class-declaration
+     =  <b>external</b>  <b>class</b>  external-list
+ external-list
+     =  external-item  { , external-item }
+ external-item
+     =  identifier  [ = external-identification ]
+ external-identification
+     =  string
+</pre>
+<h2>Chapter 12: Class Simulation</h2>
+<pre>
+ activation-statement
+     =  activation-clause  [ scheduling-clause ]
+ activation-clause
+     =  activator  object-expression
+ activator
+     =  <b>activate</b>
+     |  <b>reactivate</b>
+ scheduling-clause
+     =  timing-clause
+     |  ( <b>before</b>  |  <b>after</b> )  object-expression
+ timing-clause
+     =  simple-timing-clause  [ <b>prior</b> ]
+ simple-timing-clause
+     =  ( <b>at</b>  |  <b>delay</b> )  arithmetic-expression
+</pre>
+</body>
+</html>

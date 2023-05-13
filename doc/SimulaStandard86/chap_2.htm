@@ -1,0 +1,307 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta http-equiv="Content-Language" content="en-gb">
+<LINK rel="stylesheet" type="text/css" href="../includes/standard.css">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Chapter 2: Types, values and references</title>
+<style>
+<!--
+.BNF1        {  }
+.Note        {  }
+H3:before { content: "Section" }
+-->
+</style>
+</head>
+<body>
+<h1>Chapter 2<br>
+TYPES, VALUES AND REFERENCES</h1>
+<pre>
+     type
+         =  value-type
+         |  reference-type
+
+     value-type
+         =  arithmetic-type
+         |  <b>boolean</b>
+         |  <b>character</b>
+
+     arithmetic-type
+         =  integer-type
+         |  real-type
+
+     integer-type
+         =  [ <b>short</b> ]  <b>integer</b>
+
+     real-type
+         =  [ <b>long</b> ]  <b>real</b>
+
+     reference-type
+         =  object-reference-type
+         |  <b>text</b>
+
+     object-reference-type
+         =  <b>ref</b>  &quot;(&quot;  qualification  &quot;)&quot;
+
+     qualification
+         =  class-identifier
+</pre>
+<p>The various types basically denote properties of values. A
+<span class="reserved">value</span> is a piece of information interpreted at run time to
+represent itself. A "reference" is a piece of information
+which identifies a value, called the "referenced" value.
+The distinction between a reference and its referenced
+value is determined by context.</p>
+
+<p>
+A value is primarily a number, a logical value, a program point, an object, a single character or an ordered sequence
+of characters (a string).</p>
+
+<p>
+The values of expressions and their constituents are
+defined in chapter 3.</p>
+
+<p>
+Value types are characterized by being directly associated
+with a set of possible values (the "value range" of the
+type). With the exception of type <span class="reserved">Boolean</span> these associated
+values for each value type constitute an ordered set.</p>
+
+<p>
+The reference concept corresponds to the intuitive notion
+of a <span class="reserved">name</span> or a "pointer". It provides a mechanism for
+referencing values. It also reflects the addressing
+possibilities of the machine. In certain simple cases a
+reference could be implemented as the memory address of a
+stored value. There are two reference types, object
+reference type and text reference.</p>
+
+<p>Note: There is no reference concept associated with value types.
+
+<h2>Arithmetic types</h2>
+
+<p>
+Arithmetic types are used for representing numerical values. The types are integer type and real type. The
+integer type is either <b>integer</b> or <b>short</b> <b>integer</b>. The real
+type is either <b>real</b> or <b>long</b>
+<h3>The type short integer</h3>
+
+<p>
+The type <b>short</b> <b>integer</b> serves to represent integer values
+whose value range may be a sub range of that of <b>integer</b>.
+Apart from this, <b>short</b> <b>integer</b> and <b>integer</b> are fully
+compatible in this language definition.</p>
+
+<p>
+An implementation may choose to implement <b>short</b> <b>integer</b>
+exactly as <b>integer</b>, i.e. ignoring the keyword <b>short</b></p>
+
+<p>
+  Note:  All arithmetic operations upon integer type values are performed as
+</p>
+
+<h3>The type long real</h3>
+
+<p>
+Type <b>long</b> <b>real</b> serves to represent real values capable of
+retaining a higher precision than that of the type <b>real</b>.
+The relative value range of the respective types is
+implementation-defined. Apart from this, <b>long</b> <b>real</b> and
+<b>real</b> are fully compatible in this language definition.</p>
+
+<p>
+An implementation may choose to implement <b>long</b> <b>real</b> exactly
+as <b>real</b>, i.e. ignoring the keyword <b>long</b> and the extra "&amp;"
+in an exponent part.</p>
+
+<h2>The type Boolean</h2>
+
+<p>
+The type <b>Boolean</b> represents logical values. The range of
+values consists of the values <b>true</b> and <b>false</b>.</p>
+
+<h2>The type character</h2>
+
+<p>
+The type <b>character</b> is used to represent single characters.
+Such a value is an instance of an "internal character". For
+any given implementation there is a one-to-one mapping
+between a subset of internal characters and external
+("printable") characters. The internal character set is
+implementation-defined. The external character set is
+defined in 1.2.</p>
+
+<h2>Object reference</h2>
+
+<p>
+Associated with a class object there is a unique "object
+reference" which identifies the object, and for any class C
+there is an associated object reference type <b>ref</b> (C). A
+quantity of that type is said to be qualified by the class
+C. Its value is either an object, or the special value
+<b>none</b> which represents "no object". The qualification
+restricts the range of values to objects of classes
+included in the qualifying class. The range of values
+includes the value <b>none</b> regardless of the qualification.</p>
+
+<h3>Qualification</h3>
+
+<p>
+The qualification of an object reference is a class
+identifier and is thus subject to the scope and visibility
+rules of identifiers given in 5.6.</p>
+
+<p>
+The qualification is associated with an instance of the
+block in which the class declaration referred to is local.
+This implies that certain validity checks on the
+qualification cannot be performed on the basis of the
+program text alone. Such tests must then be made during the
+execution of the program.</p>
+
+<p>
+Consider the following example.</p>
+<p>
+<h4>Example</h4>
+<pre>
+          <b>class</b> a;  <b>begin</b>  <b>class</b> b; ;     <b>end</b> *** class a;
+
+        a <b>class</b> aa; <b>begin</b>  <b>ref</b> (b) aaxb;  <b>end</b> *** class aa;
+
+          <b>ref</b> (a) a1;  <b>ref</b> (aa) a2;
+
+          a1 :- a2 :- <b>new</b> aa;
+          <b>if</b>  inint=2  <b>then</b> a1:- <b>new</b> a;  |  - or:  a2:- <b>new</b> aa;
+          <b>inspect</b> a2 <b>do</b>
+          <b>inspect</b> a1 <b>do</b>   aaxb:- <b>new</b> b;
+</pre>
+<p>The reference assignment in the last line is valid only if
+the qualification of "aaxb" is the same as that of "</b>new</b> b".
+This is the case only when the then-branch of the
+conditional statement is not taken. Thus a qualification
+check must be performed during execution.</p>
+
+<h3>Subordinate types</h3>
+<p>
+An object reference type is said to be "subordinate" to a
+second object reference type if the qualification of the
+former is a subclass of the class which qualifies the
+latter.</p>
+
+<p>
+A proper procedure is said to be of a universal type. Any
+type is subordinate to the universal type (cf. 4.6.1 and
+5.5.3).</p>
+
+<h2>The type text</h2>
+
+<p>
+The type <span class="reserved">text</span> serves to declare or specify a text variable
+quantity.</p>
+
+<p>
+A text value is a string, i.e. an ordered sequence
+(possibly empty) of characters. The number of characters is
+called the "length" of the text value.</p>
+
+<p>
+A text frame is a memory device which contains a nonempty
+text value. A text frame has a fixed length and can only
+contain text values of this length. A text frame may be
+"alterable" or "constant". A constant frame always contains
+the same text value. An alterable text frame may have its
+contents modified. The maximum length of a text frame is
+implementation-defined.</p>
+
+<p>
+A text reference identifies a text frame. The reference is
+said to possess a value, which is the contents of the
+identified frame. The special text reference <b>notext</b>
+identifies "no frame". The value of <b>notext</b> is the empty
+text value.</p>
+
+<h3>Text objects</h3>
+
+<p>
+A "text object" is conceptually an instance of the
+following class declaration (cf. 5.5):</p>
+<pre>
+       <b>class</b> TEXTOBJ(SIZE,CONST);
+       <b>integer</b> SIZE; <b>Boolean</b> CONST;
+       <b>begin</b> <b>character</b> <b>array</b> MAIN(1:SIZE); <b>end</b>;
+</pre>
+<h3>Text frames</h3>
+
+<p>
+Any non-empty sequence of consecutive elements of the array
+attribute MAIN constitutes a text frame. More specifically,
+any text frame is completely identified by the following
+information:</p>
+<ol>
+<li>
+a reference to the text object containing the frame,
+<li>
+the start position of the frame, being an ordinal
+    number less than or equal to SIZE,
+<li>
+the length of the frame.
+</ol>
+<p>
+A frame which is completely contained by another frame is
+called a "subframe" of that frame. The text frame
+associated with the entire array attribute MAIN is called
+the "main frame" of the text object. All frames of the text
+object are subframes of the main frame.</p>
+
+<p>Note:
+  A main frame is a subframe of no frame except itself.
+
+<p>
+The frames of a text object are either all constant or all
+variable, as indicated by the attribute CONST. The value of
+this attribute remains fixed throughout the lifetime of the
+text object. A constant main frame always corresponds to a
+string (see 1.6).</p>
+
+<p>
+The attribute SIZE is always positive and remains fixed
+throughout the lifetime of a text object.</p>
+
+<p>Note:
+
+The identifier TEXTOBJ and its three attribute
+identifiers are not accessible to the user. Instead,
+properties of a text object are accessible through
+text variables, using the dot notation.
+
+<h2>Type conversion</h2>
+
+<p>
+Values may in some cases be converted from one type to
+another.</p>
+
+<p>
+Implicit conversion between arithmetic type values follows
+the rules described elsewhere (see 3.3.1, 3.5.1, 4.1.1). In
+addition, the procedure "entier", used to convert values of
+real type to <b>integer</b>, is described in 9.1.</p>
+
+<p>
+Conversion between <b>text</b> and arithmetic type values is
+described in 8.6 and 8.7 (text attributes "getint",
+"putint", "getreal", "putreal", "putfix", "getfrac" and
+"putfrac").</p>
+
+<p>
+Conversion between <b>character</b> and <b>text</b> values is described
+in 8.3 (text attributes "getchar", "putchar").</p>
+
+<p>
+Conversion between <b>character</b> and <b>integer</b> values is
+described in 9.2 ("isorank", "rank", "isochar", "char").</p>
+
+</body>
+
+</html>

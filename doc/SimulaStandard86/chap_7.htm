@@ -1,0 +1,465 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="../includes/standard.css">
+<title>Chapter 7: Sequencing</title>
+</head>
+<body>
+<h1>Chapter 7<br>
+SEQUENCING</h1>
+<h2>Block instances and states of execution</h2>
+
+ <p>The constituent parts of a program execution are dynamic instances of blocks,
+ i.e. subblocks, prefixed blocks, connection blocks and class bodies. A block
+ instance is said to be "local to" the one which (directly) contains its
+ describing text. For instance an object of a given class is local to the block
+ instance which contains the class declaration. The instance of the outermost
+ block (see chapter 11) is local to no block instance.
+
+ <p>At any time, the "program sequence control", PSC, refers to that program point
+ within a block instance which is currently being executed; the PSC is
+ "positioned" at the program point and is "contained" by the block instance.
+
+ <p>The entry into any block invokes the generation of an instance of that block,
+ whereupon the PSC enters the block instance at its first executable statement.
+ If and when the PSC reaches the final <b>end</b> of a non-class block instance (i.e.
+ an instance of a prefixed block, a subblock, a procedure body or a connection
+ block) the PSC returns to the program point immediately following the statement
+ or expression which caused the generation of the block instance. For sequencing
+ of class objects see 7.2 and 7.3.
+
+ <p>A block instance is at any time in one of four states of execution:
+ "attached", "detached", "resumed" or "terminated".
+
+ <p>A non-class block instance is always in the attached state. The instance is
+ said to be "attached to" the block instance which caused its generation. Thus,
+ an instance of a procedure body is attached to the block instance containing
+ the corresponding procedure statement or function designator. A non-class,
+ non-procedure block instance is attached to the block instance to which it is
+ local. The outermost block instance (see chapter 11) is attached to no block
+ instance. If and when the PSC leaves a non-class block instance through its
+ final end, or through a goto-statement, the block instance ceases to exist.
+
+ <p>A class object is initially in the attached state and said to be attached to
+ the block instance containing the corresponding object generator. It may enter
+ the detached state through the execution of a "detach statement" (see 7.3.1).
+ The object may reenter the attached state through the execution of a call
+ statement (see 7.3.2), whereby it becomes attached to the block instance
+ containing the call statement. A detached object may enter the resumed state
+ through the execution of a resume statement (see 7.3.3). If and when the PSC
+ leaves the object through its final <b>end</b> or through a goto statement, the
+ object enters the terminated state. No block instance is attached to a
+ terminated class object.
+
+ <p>The execution of a program which makes no use of detach, call or resume
+ statements is a simple nested structure of attached block instances.
+
+ <p>Whenever a block instance ceases to exist, all block instances local or
+ attached to it also cease to exist. The dynamic scope of an object is thus
+ limited by that of its class declaration. The dynamic scope of an array
+ declaration may extend beyond that of the block instance containing the
+ declaration, since the call by reference parameter transmission mode is
+ applicable to arrays.
+<h2>Quasi-parallel systems</h2>
+
+ <p>A quasi-parallel system is identified by any instance of a subblock or a
+ prefixed block, containing a local class declaration. The block instance which
+ identifies a system is called the "system head".
+
+ <p>The outermost block instance (see chapter 11) identifies a system referred to
+ as the "outermost system".
+
+ <p>A quasi-parallel system consists of "components". In each system one of the
+ components is referred to as the "main component" of the system. The other
+ components are called "object components".
+
+ <p>A component is a nested structure of block instances one of which, called the
+ "component head", identifies the component. The head of the main component of a
+ system coincides with the system head. The heads of the object components of a
+ system are exactly those detached or resumed objects which are local to the
+ system head.
+
+ <p>At any time exactly one of the components of a system is said to be
+ "operative". A non-operative component has an associated "reactivation point"
+ which identifies the program point where execution will continue if and when
+ the component is activated.
+
+ <p>The head of an object component is in the resumed state if and only if the
+ component is operative. Note that the head of the main component of a system is
+ always in the attached state.
+
+ <p>In addition to system components, a program execution may contain "independent
+ object components" which belong to no particular system. The head of any such
+ component is a detached object which is local to a class object or an instance
+ of a procedure body, i.e. which is not local to a system head. By definition,
+ independent components are always non-operative.
+
+ <p>The sequencing of components is governed by the detach, call and resume
+ statements, defined in 7.3. All three statements operate with respect to an
+ explicitly or implicitly specified object. The following two sections serve as
+ an informal outline of the effects of these statements.
+<h3>Semi-symmetric sequencing: detach - call</h3>
+
+ <p>In this section the concept of a quasi-parallel system is irrelevant. Thus,
+ only object components are considered, and no distinction is made between
+ components which belong to a system and those which are independent.
+
+ <p>An object component is created through the execution of a detach statement with
+ respect to an attached object, whereby the PSC returns to the block instance to
+ which the object is attached. The object enters the detached state and becomes
+ the head of a new non-operative component whose reactivation point is
+ positioned immediately after the detach statement.
+
+ <p>The component may be reactivated through the execution of a call statement with
+ respect to its detached head, whereby the PSC is moved to its reactivation
+ point. The head reenters the attached state and becomes attached to the block
+ instance containing the call statement. Formally, the component thereby loses
+ its status as such.
+
+<h3>Symmetric component sequencing: detach - resume</h3>
+
+ <p>In this section, only components which belong to a quasi-parallel system are
+ considered.
+
+ <p>Initially, i.e. upon the generation of a system head, the main component is the
+ operative and only component of the system.
+
+ <p>Non-operative object components of the system are created as described in the
+ previous section, i.e. by detach statements with respect to attached objects
+ local to the system head.
+
+ <p>Non-operative object components of the system may be activated by
+ call-statements, whereby they lose their component status, as described in the
+ previous section.
+
+ <p>A non-operative object component of the system may also be reactivated through
+ the execution of a resume statement with respect to its detached head, whereby
+ the PSC is moved to its reactivation point. The head of the component enters
+ the resumed state and the component becomes operative. The previously operative
+ component of the system becomes non-operative and its reactivation point is
+ positioned immediately after the resume statement. If this component is an
+ object component its head enters the detached state.
+
+ <p>The main component of the system regains operative status through the execution
+ of a detach statement with respect to the resumed head of the currently
+ operative object component, whereby the PSC is moved to the reactivation point
+ of the main component. The previously operative component becomes
+ non-operative, its reactivation point positioned immediately after the detach
+ statement. The head of this component enters the detached state.
+
+ <p>Observe the symmetric relationship between a resumer and its resumee, in
+ contrast to that between a caller and its callee.
+<h3>Dynamic enclosure and the operating chain</h3>
+
+ <p>A block instance X is said to be "dynamically enclosed" by a block instance Y
+ if and only if there exists a sequence of block instances
+<pre>
+         X = Z0, Z1, ...., Zn = Y            (n&gt;=0)
+</pre>
+ <p>such that for i= 1,2,...,n:
+<ul>
+<li>Zi-1 is attached to Zi, or
+
+<li>Zi-1 is a resumed object whose associated system head is
+           attached to Zi.
+</ul>
+ <p>Note that a terminated or detached object is dynamically enclosed by no block
+ instance except itself.
+
+ <p>The sequence of block instances dynamically enclosing the block instance
+ currently containing the PSC is called the "operating chain". A block instance
+ on the operating chain is said to be "operating". The outermost block instance
+ is always operating.
+
+ <p>A component is said to be operating if the component head is operating.
+
+ <p>A system is said to be operating if one of its components is operating. At any
+ time, at most one of the components of a system can be operating. Note that the
+ head of an operating system may be non-operating.
+
+ <p>An operating component is always operative. If the operative component of a
+ system is non-operating, then the system is also non-operating. In such a
+ system, the operative component is that component which was operating at the
+ time when the system became non-operating, and the one which will be operating
+ if and when the system again becomes operating.
+
+ <p>Consider a non-operative component C whose reactivation point is contained by
+ the block instance X. Then the following is true:
+<ul>
+<li>X is dynamically enclosed by the head of C.
+
+<li>X dynamically encloses no block instance other than itself.
+</ul>
+ <p>The sequence of block instances dynamically enclosed by the head of C is
+ referred to as the "reactivation chain" of C. All component heads on this
+ chain, except the head of C, identify operative (non-operating) components. If
+ and when C becomes operating, all block instances on its reactivation chain
+ also become operating.
+
+ <p>See detailed example in 7.4.
+<h2>Quasi-parallel sequencing</h2>
+
+ <p>A quasi-parallel system is created through the entry into a subblock or a
+ prefixed block, which contains a local class declaration, whereby the generated
+ instance becomes the head of the new system. Initially, the main component is
+ the operative and only component of the system.
+
+<h3>Detach</h3>
+
+ <p>Consider a call of the detach attribute of a block instance X.
+
+ <p>If X is an instance of a prefixed block the detach statement has no effect.
+ Assume that X is a class object. The following cases arise:
+<ol>
+<li>X is an attached object.<br>
+         If X is not operating the detach statement constitutes an error.
+         Assume X is operating. The effect of the detach statement is:
+<ul>
+<li>X becomes detached and thereby (the head of) a new non-operative
+           object component, its reactivation point positioned immediately
+           after the detach statement. As a consequence, that part of the
+           operating chain which is dynamically enclosed by X becomes the
+           (non-operating) reactivation chain of X.
+
+<li>The PSC returns to the block instance to which X was attached
+           and execution continues immediately after the associated object
+           generator or call statement (see 7.3.2).
+</ul>
+       If X is local to a system head, the new component becomes a member
+         of the associated system. It is a consequence of the language
+         definition that, prior to the execution of the detach statement, X
+         was dynamically enclosed by the head of the operative component of
+         this system. The operative component remains operative.
+
+<li>X is a detached object.<br>
+         The detach statement then constitutes an error.
+
+<li>X is a resumed object.<br>
+         X is then (the head of) an operative system component. Let S be the
+         associated system. It is a consequence of the language definition
+         that X must be operating. The effect of the detach statement is:
+<ul>
+<li>X enters the detached state and becomes non-operative, its
+           reactivation point positioned immediately after the detach
+           statement. As a consequence, that part of the operating chain
+           which is dynamically enclosed by X becomes the (non-operating)
+           reactivation chain of X.
+
+<li>The PSC is moved to the current reactivation point of the main
+           component of S, whereby this main component becomes operative
+           and operating. As a consequence, all block instances on the
+           reactivation chain of the main component also become operating.
+</ul>
+<li>X is a terminated object.<br>
+        The detach statement then constitutes an error.
+</ol>
+<h3>Call</h3>
+
+ <p>"call" is formally a procedure with one object reference parameter qualified by
+ a fictitious class including all classes. Let Y denote the object referenced by
+ a call statement.
+
+ <p>If Y is terminated, attached or resumed, or Y == none, the call statement
+ constitutes an error.
+
+ <p>Assume Y is a detached object. The effect of the call statement is:
+<ul>
+<li>Y becomes attached to the block instance containing the call
+        statement, whereby Y loses its status as a component head. As a
+        consequence the system to which Y belongs (if any) loses the
+        associated component.
+
+<li>The PSC is moved to the (former) reactivation point of Y. As a
+        consequence, all block instances on the reactivation chain of Y
+        become operating.
+</ul>
+<h3>Resume</h3>
+
+ <p>"resume" is formally a procedure with one object reference parameter qualified
+ by a fictitious class including all classes. Let Y denote the object referenced
+ by a resume statement.
+
+ <p>If Y is not local to a system head, i.e. if Y is local to a class object or an
+ instance of a procedure body, the resume statement constitutes an error.
+
+ <p>If Y is terminated or attached, or Y==none, the resume statement constitutes an
+ error.
+
+ <p>If Y is a resumed object, the resume statement has no effect (it is a
+ consequence of the language definition that Y must then be operating.)
+
+ <p>Assume Y is a detached object being (the head of) a non-operative system
+ component. Let S be the associated system and let X denote (the head of) the
+ current operative component of S. It is a consequence of the language
+ definition that X must be operating, and that X is either the main component of
+ S or local to the head of S. The effect of the resume statement is:
+<ul>
+<li>X becomes non-operative, its reactivation point positioned
+        immediately after the resume statement. As a consequence, that
+        part of the operating chain which is dynamically enclosed by X
+        becomes the (non-operating) reactivation chain of X. If X is an
+        object component its head enters the detached state.
+
+<li>The PSC is moved to the reactivation point of Y, whereby Y
+        enters the resumed state and becomes operative and operating. As
+        a consequence, all block instances on the reactivation chain of
+        Y also become operating.
+</ul>
+<h3>Object <b>end</b></h3>
+
+ <p>The effect of the PSC passing through the final <b>end</b> of a class object is the
+ same as that of a detach with respect to that object, except that the object
+ becomes terminated, not detached. As a consequence it attains no reactivation
+ point and loses its status as a component head (if it has such status).
+
+<h3>Goto statements</h3>
+
+ <p>A designational expression defines a program point within a block instance.
+
+ <p>Let P denote the program point identified by evaluating the designational
+ expression of a goto-statement, and let X be the block instance containing P.
+ Consider the execution of the goto-statement:
+<ol>
+<li>Let Y denote the block instance currently containing the PSC.
+
+<li>If X equals Y the PSC is moved to P.
+
+<li>Otherwise, if Y is the outermost block instance the goto-
+         statement constitutes an error.
+
+<li>Otherwise, the effect is that of the PSC passing through the
+         final <b>end</b> of Y (see 7.3.4) after which the process is
+         immediately repeated from 1).
+</ol>
+ <p>See also 4.5.
+<h2>Annotated example</h2>
+<pre>
+     1  <b>begin</b> <b>comment</b> S1;
+     2        <b>ref</b>(C1) X1;
+     3        <b>class</b> C1;
+     4        <b>begin</b> <b>procedure</b> P1; detach;
+     5              P1
+     6        <b>end</b> C1;
+     7        <b>ref</b>(C2) X2;
+     8        <b>class</b> C2;
+     9        <b>begin</b> <b>procedure</b> P2;
+    10              <b>begin</b> detach;
+    11                      ! - see fig. 7.7;
+    12              <b>end</b> P2;
+    13              <b>begin</b> <b>comment</b> system S2;
+    14                    <b>ref</b>(C3) X3;
+    15                    <b>class</b> C3;
+    16                    <b>begin</b> detach;
+    17                          P2
+    18                    <b>end</b> C3;
+    19                    X3:- <b>new</b> C3;
+    20                    resume(X3)
+    21              <b>end</b> S2
+    22        <b>end</b> C2;
+    23        X1:- <b>new</b> C1;
+    24        X2:- <b>new</b> C2;
+    25        call(X2)
+    26  <b>end</b> S1;
+</pre>
+ <p>The execution of this program is explained below. In the figures, system heads
+ are indicated by squares and other block instances by parentheses. Vertical
+ bars connect the component heads of a system, and left arrows indicate
+ attachment.
+
+ <p>Just before, and just after the execution of the detach statement in line 4,
+ the situations are:
+<pre>
+ Fig. 7.1         ---
+                 | S1| &lt;-- (X1) &lt;-- (P1) &lt;-- PSC
+                  ---
+
+
+ Fig. 7.2         ---
+                 | S1| &lt;-- PSC
+                  ---
+                   |
+                  (X1) &lt;-- (P1) &lt;-- Reactivation point (RP) of X1
+</pre>
+
+ <p>Before and after the detach in line 16:
+
+<pre>
+ Fig. 7.3         ---                ---
+                 | S1| &lt;-- (X2) &lt;-- | S2| &lt;-- (X3) &lt;-- PSC
+                  ---                ---
+                   |
+                  (X1) &lt;-- (P1) &lt;-- RP of X1
+
+
+ Fig. 7.4         ---                ---
+                 | S1| &lt;-- (X2) &lt;-- | S2| &lt;-- PSC
+                  ---                ---
+                   |                  |
+                   |                 (X3) &lt;-- RP of X3
+                   |
+                  (X1) &lt;-- (P1) &lt;-- RP of X1
+</pre>
+
+ <p>Fig. 7.4 also shows the situation before the resume in line 20. After this
+ resume:
+
+<pre>
+ Fig. 7.5         ---                ---
+                 | S1| &lt;-- (X2) &lt;-- | S2| &lt;-- RP of main component of S2
+                  ---                ---
+                   |                  |
+                   |                 (X3) &lt;-- PSC
+                   |
+                  (X1) &lt;-- (P1) &lt;-- RP of X1
+</pre>
+
+ Before and after the detach in line 10:
+
+<pre>
+ Fig. 7.6         ---                ---
+                 | S1| &lt;-- (X2) &lt;-- | S2| &lt;-- RP of main component of S2
+                  ---                ---
+                   |                  |
+                   |                 (X3) &lt;-- (P2) &lt;-- PSC
+                   |
+                  (X1) &lt;-- (P1) &lt;-- RP of X1
+
+
+ Fig. 7.7         ---
+                 | S1| &lt;-- PSC
+                  ---
+                   |
+                  (X1) &lt;-- (P1) &lt;-- RP of X1
+                   |
+                   |        ---
+                  (X2) &lt;-- | S2| &lt;-- RP of main component of S2
+                            ---
+                             |
+                            (X3) &lt;-- (P2) &lt;-- RP of X2
+</pre>
+
+ <p>Note that X3 is still the operative component of S2 and does not have a
+ reactivation point of its own. Fig. 7.7 also shows the situation before the
+ call in line 25. After this call, the situation in fig. 7.6 is reestablished.
+ If, however, the call in line 25 is replaced by a "resume(X2)" the following
+ situation arises:
+
+<pre>
+ Fig. 7.8         ---
+                 | S1| &lt;-- RP of main component of S1
+                  ---
+                   |
+                  (X1) &lt;-- (P1) &lt;-- RP of X1
+                   |
+                   |        ---
+                  (X2) &lt;-- | S2| &lt;-- RP of main component of S2
+                            ---
+                             |
+                            (X3) &lt;-- (P2) &lt;-- PSC
+</pre>
+
+ <p>If now a "resume(X1)" is executed at * in line 11, the PSC is moved to the "RP
+ of X1" in fig. 7.8, leaving an "RP of X2" at the former PSC. If instead a
+ "detach" is executed, fig. 7.8 leads back to fig. 7.7.
+
+</body>
+</html>

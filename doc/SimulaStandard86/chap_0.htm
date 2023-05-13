@@ -1,0 +1,204 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta http-equiv="Content-Language" content="en-gb">
+<link rel="stylesheet" type="text/css" href="../includes/standard.css">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Chapter 0: General Introduction</title>
+</head>
+
+<body>
+
+<h1>Chapter 0<br>
+General Introduction</h1>
+<h2>Introduction</h2>
+<p> SIMULA is a general purpose programming language.
+It inherits the algorithmic properties of ALGOL 60 and introduces methods for structuring
+data. The main characteristic of SIMULA is that it is easily modelled towards specialized
+problem areas, and hence can be used as a basis for Special Application Languages.</p>
+<p> In this Standard the name SIMULA is considered synonymous with SIMULA 67. Although
+there exists a predecessor, SIMULA I, this latter language has achieved limited use. It is
+recommended that the language defined in this Standard be referred to as "Standard SIMULA".</p>
+<p> SIMULA includes most of the ALGOL 60 language. Wherever ALGOL is used in this Standard
+it relates to the STANDARD ALGOL 60 definition (ISO 1538).</p>
+<h2>Scope and field of application</h2>
+<p> This Standard establishes the definition of the programming language SIMULA and specifies
+conformity rules to related products, such as programs and processors. Its purpose is to
+facilitate interchange and promote portability of SIMULA programs between data processing
+systems.</p>
+<p> This Standard specifies:</p>
+<ol type="a">
+  <li>The syntax, semantics and representation of SIMULA,</li>
+  <li>Characteristics of processors (see 4.2.1) and their accompanying
+  documents, and of SIMULA programs, required for conformity to this
+  Standard,</li>
+  <li>What is left to the discretion of the implementor, or to be
+  specified for each implementation.</li>
+</ol>
+<p> This Standard does not specify:</p>
+<ol type="a">
+  <li>Results or issues that are explicitly left undefined or said to be undefined,</li>
+  <li>How non-valid programs are to be rejected and how this will be
+  reported,</li>
+  <li>The relationship of the hypothetical computer, used to explain
+  the actions which constitute the elaboration of a program, to
+  an actual data processing system.</li>
+</ol>
+<h2>REFERENCES</h2>
+<p> ISO  646-1973: The 7-bit coded character set for information processing
+interchange.<br>
+ ISO 1538-1984: Programming languages - ALGOL 60<br>
+ ISO 2022-1982: ISO 7-bit and 8-bit coded character sets</p>
+<p> "Common Base Language" by O.-J. Dahl, B. Myhrhaug and K. Nygaard
+Norwegian Computing Center 1984. (ISBN 82-539-0225-5)</p>
+<h2>DEFINITIONS</h2>
+<p> For the purpose of this Standard the following definitions apply.</p>
+<div align="center">
+  <table border="0" width="100%" cellspacing="1">
+    <tr>
+      <td width="7%" align="center" valign="top">
+        <p align="left"><u>Note</u>:</p>
+      </td>
+      <td width="94%" align="center">
+        <p align="left"> Several terms used in this Standard are explained at the appropriate
+        place in Part II
+        (Description of the language). For convenience some
+        of these have been included here
+        too, at times with a
+simplified definition. It is understood, however, that no difference of meaning
+is considered to
+        exist, and all definitions of a term are equivalent.</td>
+    </tr>
+  </table>
+</div>
+<h3>SIMULA Program</h3>
+<h4>Potential program:</h4>
+<p>     A text, that is a sequence of characters or typographical marks, meant
+to be a sequence of tokens constituting a SIMULA program.</p>
+<h4>Valid program:</h4>
+<p>     A potential program that is a program according to the rules in this
+Standard.</p>
+<h4>Non-valid program:</h4>
+<p>     A potential program that is not a program but can be turned into one
+by deleting or inserting a number of symbols.</p>
+<h4>Elaboration of a program:</h4>
+<p>     A sequence of actions specified by the semantics to be carried out.</p>
+<h4>SIMULA program:</h4>
+<p>     A valid program whose elaboration is defined by this Standard for
+an indicated class of input data.</p>
+<h3>SIMULA Processors</h3>
+<h4>Processor:</h4>
+<p>     A compiler, translator or interpreter, in combination with a data
+processing system, that accepts a potential program, transcribed
+in a form that can be processed by that data processing system,
+reports whether the potential program is valid or not, and if so
+requested is able to execute it, if it has not
+rejected it.</p>
+<h3>SIMULA Implementations</h3>
+<h4>Implementation:</h4>
+<p>     A well-documented processor is said to establish an implementation
+of the language SIMULA.</p>
+<h4>Implemented language:</h4>
+<p>     The version of the language defined by the implementation.</p>
+<h4>Extension:</h4>
+<p>     A rule in the implemented language that</p>
+<ol type="a">
+  <li>is not given in this Standard</li>
+  <li>does not cause any ambiguity when added to this Standard
+  (but may serve to remove a restriction)</li>
+  <li>is within the scope of this Standard.</li>
+</ol>
+<h4>Implementation-defined:</h4>
+<p>     What is to be specified for each implementation.</p>
+<h4>Implementation-dependent:</h4>
+<p>     What is left to the discretion of the implementor.</p>
+<h2>CONFORMITY</h2>
+<h3>Requirements</h3>
+<h4>Conforming programs</h4>
+<p> Conformity to this Standard requires for a program that</p>
+<ol type="a">
+  <li>it shall be a SIMULA program</li>
+  <li>a set of input data shall be given for which it has a defined
+  meaning.</li>
+</ol>
+<h4>Conforming processors</h4>
+<p> Conformity to this Standard requires for a processor that</p>
+<ol type="a">
+  <li>it shall accept valid programs as being valid,</li>
+  <li>it shall reject non-valid programs as being non-valid,</li>
+  <li>it shall not elaborate a SIMULA program differently from what is
+  defined in this Standard,</li>
+  <li>it shall be accompanied by documents complying with the
+  requirements below.</li>
+</ol>
+<h4>Documentation</h4>
+<p> It is required for the documents accompanying a conforming processor that these shall
+describe clearly</p>
+<ol type="a">
+  <li>its purpose, the name of the implemented language, if not SIMULA,
+  and the environment (hardware and software) in which it will work,</li>
+  <li>its intended properties, including
+    <ul type="disc">
+      <li>the actions taken when results or issues occur, left undefined in
+      this Standard,</li>
+      <li>conventions for issues said to be implementation-defined,</li>
+      <li>what is provided for issues declared to be implementation dependent,</li>
+    </ul>
+  </li>
+  <li>all differences between the implemented language and the language
+  defined in Part II of this Standard,</li>
+  <li>its logical structure,</li>
+  <li>the way to put it into use.</li>
+</ol>
+<h4>Conforming implementations</h4>
+<p> A conforming implementation shall comply with the above requirements for a processor
+and its accompanying documents.</p>
+<h3>Quantitative restrictions</h3>
+<p> The requirements specified in 4.1 shall allow for quantitative restrictions to rules
+stated or implied as having no such restriction in this Standard, but only if they are
+fully described in the documents with the implementation. These restrictions are to be
+considered implementation-defined in as far as they are not dependent of any momentary
+resource restraint during execution of a program.</p>
+<h3>Extensions</h3>
+<p> An implementation that allows for extensions in the implemented language is considered
+to conform to this Standard, notwithstanding 4.1 if</p>
+<ol type="a">
+  <li>it would be conforming when the extensions were omitted,</li>
+  <li>those extensions are clearly described with the implementation,</li>
+  <li>while accepting programs that are non-valid according to the rules
+  given in Part II of this Standard, it provides means for indicating
+  which part, or parts, of a program would have led to its rejection,
+  had no extensions been allowed (cf. Part II, ch. 16),</li>
+  <li>the implemented language is a super-language of SIMULA.</li>
+</ol>
+<p> Extensions are allowed only if the following conditions are fulfilled:</p>
+<ol type="a">
+  <li>The implementor provides a translator program, which takes
+  any program accepted by that implementation and translates
+  it into a valid program. The resulting program may contain
+  a minimum of calls to non-SIMULA procedures in cases where
+  this is absolutely necessary due to a lack of facilities
+  in the language.</li>
+  <li>Each implementation has a switch which must be set to make
+  the compiler accept programs with extensions.</li>
+</ol>
+<p>         An implementation which allows extensions, shall give
+warning messages for the use of such extensions.</p>
+<p> Valid programs using extensions shall be described as "conforming
+to the SIMULA Standard but for the following indicated parts".</p>
+<h3>Subsets</h3>
+<p> This Standard does not include subsets.</p>
+<h2>TESTS</h2>
+<p> Whether an implementation is a conforming implementation may possibly be
+ detected by a suite of test programs. If there is any uncertainty or doubt
+ regarding acceptance of these programs then the conclusion drawn from the
+ actual behavior of the processor will prevail over those derived from its
+ accompanying documents.</p>
+<h2>APPENDICES</h2>
+<p> Appendices contained within this document are not part of this Standard.</p>
+
+</body>
+
+</html>

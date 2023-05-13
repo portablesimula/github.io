@@ -1,0 +1,156 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="../includes/standard.css">
+<title>Chapter 11: Class Simset</title>
+</head>
+<body>
+<h1>Chapter 11<br>
+CLASS SIMSET</h1>
+
+ <p>The class "simset" contains facilities for the manipulation of circular two-way
+ lists, called "sets".
+<pre>
+         <b>class</b> simset;
+         <b>begin</b>
+                    <b>class</b> linkage; ...........11.1 ;
+            linkage <b>class</b> link; ..............11.2 ;
+            linkage <b>class</b> head; ..............11.3 ;
+         <b>end</b> simset;
+</pre>
+ <p>The reference variables and procedures necessary for set handling are
+ introduced in standard classes declared within the class "simset". Using these
+ classes as prefixes, their relevant data and other properties are made parts of
+ the object themselves.
+
+ <p>Both sets and objects which may acquire set membership have references to a
+ successor and a predecessor. Consequently they are made subclasses of the
+ "linkage" class.
+
+ <p>The sets are represented by objects belonging to a subclass "head" of
+ "linkage". Objects which may be set members belong to subclasses of "link"
+ which is itself another subclass of "linkage".
+
+<h2>Class "linkage"</h2>
+<pre>
+         <b>class</b> linkage;
+         <b>begin</b> <b>ref</b> (linkage) SUC, PRED;
+            <b>ref</b> (link) <b>procedure</b> suc;
+                       suc:- <b>if</b> SUC <b>in</b> link <b>then</b> SUC <b>else</b> <b>none</b>;
+            <b>ref</b> (link) <b>procedure</b> pred;
+                      pred:- <b>if</b> PRED <b>in</b> link <b>then</b> PRED <b>else</b> <b>none</b>;
+            <b>ref</b> (linkage) <b>procedure</b> prev;   prev:- PRED;
+
+         <b>end</b> linkage;
+</pre>
+ <p>The class "linkage" is the common denominator for set heads and set members.
+
+ <p>SUC is a reference to the successor of this linkage object in the set, PRED
+ is a reference to the predecessor.
+
+ <p>The value of SUC and PRED may be obtained through the procedures "suc" and
+ "pred". These procedures give the value <b>none</b> if the designated object is not
+ a set member, i.e. of class "link" or a subclass of "link".
+
+ <p>The attributes SUC and PRED may only be modified through the use of procedures
+ defined within "link" and "head". This protects the user against certain kinds
+ of programming errors.
+
+ <p>The procedure "prev" enables a user to access a set head from its first member.
+<h2>Class "link"</h2>
+<pre>
+ linkage <b>class</b> link;
+         <b>begin</b>
+            <b>procedure</b> out;
+            <b>if</b> SUC=/=<b>none</b> <b>then</b> <b>begin</b>
+               SUC.PRED :- PRED;
+               PRED.SUC :- SUC;
+               SUC      :- PRED :- <b>none</b>
+            <b>end</b> out;
+
+            <b>procedure</b> follow(ptr); <b>ref</b> (linkage) ptr;
+            <b>begin</b>  out;
+               <b>if</b> ptr=/=<b>none</b> <b>and</b> <b>then</b> ptr.SUC=/=<b>none</b> <b>then</b> <b>begin</b>
+                  PRED     :- ptr;
+                  SUC      :- ptr.SUC;
+                  SUC.PRED :- ptr.SUC :- <b>this</b> linkage  <b>end</b>
+            <b>end</b> follow;
+
+            <b>procedure</b> precede(ptr); <b>ref</b> (linkage) ptr;
+            <b>begin</b>  out;
+               <b>if</b> ptr=/=<b>none</b> <b>and</b> <b>then</b> ptr.SUC=/=<b>none</b> <b>then</b> <b>begin</b>
+                  SUC      :- ptr;
+                  PRED     :- ptr.PRED;
+                  PRED.SUC :- ptr.PRED :- <b>this</b> linkage <b>end</b> if
+            <b>end</b> precede;
+
+            <b>procedure</b> into(S); <b>ref</b> (head) S;  precede(S);
+
+         <b>end</b> link;
+</pre>
+ <p>Objects belonging to subclasses of the class "link" may acquire set membership.
+ An object may only be a member of one set at a given instant.
+
+ <p>In addition to the procedures "suc" and "pred", there are four procedures
+ associated with each "link" object: "out", "follow", "precede" and "into".
+
+ <p>The procedure "out" removes the object from the set (if any) of which it is
+ a member. The procedure call has no effect if the object has no set
+ membership.
+
+ <p>The procedures "follow" and "precede" remove the object from the set (if any)
+ of which it is a member and insert it in a set at a given position. The set and
+ the position are indicated by a parameter which is inner to "linkage". The
+ procedure call has the same effect as "out" (except for possible side effects
+ from evaluation of the parameter) if the parameter is <b>none</b> or if it has no
+ set membership and is not a set head. Otherwise the object is inserted
+ immediately after ("follow") or before ("precede") the "linkage" object
+ designated by the parameter.
+
+ <p>The procedure "into" removes the object from the set (if any) of which it is a
+ member and inserts it as the last member of the set designated by the
+ parameter. The procedure call has the same effect as "out" if the parameter
+ has the value <b>none</b> (except for possible side effects from evaluating the
+ actual parameter).
+<h2>Class "head"</h2>
+<pre>
+ linkage <b>class</b> head;
+         <b>begin</b>
+            <b>ref</b> (link) <b>procedure</b> first; first :- suc;
+            <b>ref</b> (link) <b>procedure</b> last;   last :- pred;
+            <b>Boolean</b> <b>procedure</b> empty;    empty := SUC == <b>this</b> linkage;
+
+            <b>integer</b> <b>procedure</b> cardinal;
+            <b>begin</b> <b>integer</b> i;
+               <b>ref</b> (link) ptr;
+               ptr :- first;
+               <b>while</b> ptr =/= <b>none</b> <b>do</b> <b>begin</b>
+                  i   := i+1;
+                  ptr :- ptr.suc
+               <b>end</b> while;
+               cardinal := i
+            <b>end</b> cardinal;
+
+            <b>procedure</b> clear;  <b>while</b> first =/= <b>none</b> <b>do</b> first.out;
+
+            SUC :- PRED :- <b>this</b> linkage
+         <b>end</b> head;
+</pre>
+ <p>An object of the class "head", or a subclass of "head" is used to represent a
+ set. "head" objects may not acquire set membership. Thus, a unique "head" is
+ defined for each set.
+
+ <p>The procedure "first" may be used to obtain a reference to the first member of
+ the set, while the procedure "last" may be used to obtain a reference to the
+ last member.
+
+ <p>The <b>Boolean</b> procedure "empty" gives the value <b>true</b> only if the set has no
+ members.
+
+ <p>The <b>integer</b> procedure "cardinal" counts the number of members in a set.
+
+ <p>The procedure "clear" removes all members from the set.
+
+ <p>The references SUC and PRED initially point to the "head" itself, which thereby
+ represents an empty set.
+</body>
+</html>

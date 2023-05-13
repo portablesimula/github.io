@@ -1,0 +1,1069 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="../includes/standard.css">
+<title>Chapter 5: Declarations</title>
+</head>
+<body>
+<h1>Chapter 5<br>
+DECLARATIONS</h1>
+<pre>
+     declaration
+         =  simple-variable-declaration
+         |  array-declaration
+         |  switch-declaration
+         |  procedure-declaration
+         |  class-declaration
+         |  external-declaration
+</pre>
+ <p>For external declarations, see chapter 6.
+
+ <p>Declarations serve to define certain properties of the quantities used in the
+ program, and to associate them with identifiers. A declaration of an identifier
+ is valid within a certain region of the program called its "scope". Outside
+ the scope the particular identifier may be used for other purposes.
+
+ <p>Within its scope the identifier declaration may be either "visible" or
+ "invisible". If visible an occurrence of the identifier references this
+ declaration. A declaration is invisible (within its scope) either because the
+ associated identifier has been redefined or because its visibility has been
+ explicitly restricted (see 5.5.4) or because connection or remote access is
+ necessary to make it visible.
+
+ <p>Dynamically this implies that at the time of entry into a block instance all
+ identifiers declared for the block assume the significance implied by the
+ nature of the declarations given. If these identifiers are defined outside they
+ are, for the time being, given a new significance. Identifiers which are not
+ declared for the block, on the other hand, retain their old meaning.
+
+ <p>Apart from labels (see 4.10), formal parameters of procedure and class
+ declarations, possible identifiers introduced implicitly by external
+ declarations, and identifiers declared in the program prefix, each identifier
+ appearing in a program must be explicitly defined within the program.
+
+ <p>No identifier may be declared either explicitly or implicitly more than once in
+ any one block head.
+
+ <p>More precise scope and visiblity rules are given in 5.6.
+<h2>Simple variable declarations</h2>
+<pre>
+     simple-variable-declaration
+         =  type  type-list
+
+     type-list
+         =  type-list-element  { , type-list-element }
+
+     type-list-element
+         =  identifier
+         |  constant-element
+</pre>
+ <p>Type declarations serve to declare certain identifiers to represent simple
+ variables of a given type (see 3.1.1 and 3.1.2).
+
+ <p>For constant element, see 5.8.
+
+<h3>Value type variables</h3>
+
+ <p>Real type variables may assume positive and negative values including zero.
+
+ <p>Integer type variables may assume positive and negative integral values
+ including zero.
+
+ <p><b>Boolean</b> variables may assume the values <b>true</b> and <b>false</b>.
+
+ <p><b>character</b> variables may assume the implementation-defined character values
+ of the internal character set (cf. 1.2).
+<h2>Array declaration</h2>
+<pre>
+     array-declaration
+         =  [ type ]  <b>array</b>  array-segment  { , array-segment }
+
+     array-segment
+         =  array-identifier  { , array-identifier }
+            &quot;(&quot;  bound-pair-list  &quot;)&quot;
+
+     array-identifier
+         =  identifier
+
+     bound-pair-list
+         =  bound-pair  { , bound-pair }
+
+     bound-pair
+         =  arithmetic-expression  :  arithmetic-expression
+</pre>
+ <p>An array declaration declares one or several identifiers to represent
+ multi-dimensional arrays of subscripted variables and gives the dimensions of
+ the arrays, the bounds of the subscripts, and the type of the variables.
+
+ <p>The subscript bounds for any array are given in the first subscript brackets
+ following the identifier of this array in the form of a bound pair list. Each
+ bound pair gives the lower bound of a subscript followed by : followed by
+ the upper bound. The bound pair list gives the bounds of all subscripts taken
+ in order from left to right.
+
+ <p><b>Note</b>: An initial "-" in upper bound may follow : directly (cf. 1.3).
+
+ <p>The dimension is given as the number of entries in the bound pair lists.
+
+ <p>All arrays declared in one declaration are of the same quoted type. If no type
+ declarator is given the type <b>real</b> is understood.
+
+ <p>The expressions are evaluated in the same way as subscript expressions. This
+ evaluation takes place once at each entrance into the block through the block
+ head. The expressions cannot include any identifier that is declared, either
+ explicitly or implicitly, in the same block head as the array in question.
+
+ <p>An array has elements only when the values of all upper bounds are not smaller
+ than those of the corresponding lower bounds. If any lower bound value is
+ greater than the corresponding upper bound value, the array has no elements.
+ An attempt to access an element of an empty array leads to a run-time error.
+ The array may, however, be created at block entry and it may be passed as a
+ parameter.
+
+ <p>The value of an array identifier is the ordered set of values of the
+ corresponding array of subscripted variables.
+
+ <p><b>Examples</b>
+<pre>
+          <b>integer</b> <b>array</b> a(2:20)                    ! 19 elements;
+          <b>real</b> <b>array</b>  q(-7:<b>if</b> c&lt;0 <b>then</b> 2 <b>else</b> 1)   ! 10 or 9 elements;
+          <b>array</b>  a,b,c(7:n,2:m), s(-2:10)      ! any value of n or m legal;
+</pre>
+<h2>Switch declaration</h2>
+<pre>
+     switch-declaration
+         =  <b>switch</b>  switch-identifier  :=  switch-list
+
+     switch-list
+         =  designational-expression  { , designational-expression }
+</pre>
+ <p>A switch declaration defines the set of values of the corresponding
+ switch designators. These values are given one by one as the values of the
+ designational expressions entered in the switch list. With each of these
+ designational expressions there is associated an ordinal number (1,2, ...)
+ obtained by counting the items in the list from left to right. The value of the
+ switch designator corresponding to a given value of the subscript expression is
+ the value of the designational expression in the switch list having this given
+ value as its associated integer.
+
+ <p>An expression in the switch list is evaluated every time the item of the list
+ in which the expression occurs is referred to, using the current values of all
+ variables involved. This evaluation takes place in the context of the switch
+ declaration.
+
+ <p><b>Examples</b>
+<pre>
+          <b>switch</b>  s := s1,s2,q(m), <b>if</b> v&gt;-5 <b>then</b> s3 <b>else</b> s4
+          <b>switch</b>  q := p1,w
+</pre>
+<h2>Procedure declaration</h2>
+<pre>
+     procedure-declaration
+         =  [ type ]  <b>procedure</b>  procedure-heading  ;  procedure-body
+
+     procedure-heading
+         =  procedure-identifier
+            [ formal-parameter-part ; [ mode-part ]
+              specification-part ]
+
+     procedure-body
+         =  statement
+
+     procedure-identifier
+         =  identifier
+</pre>
+ <p>A procedure declaration serves to define the procedure associated with a
+ procedure identifier. The principal constituent of a procedure declaration is a
+ statement, the procedure body, which through the use of procedure statements
+ and/or function designators may be activated within those parts of the program
+ in which the procedure declaration is visible.
+
+ <p>Associated with the body is a heading, which specifies certain identifiers
+ occurring within the body to represent formal parameters. Formal parameters in
+ the procedure body are, whenever the procedure is activated, assigned the
+ values of or replaced by actual parameters. Identifiers in the procedure body
+ which are not formal are either local or non-local to the body depending on
+ whether they are declared within the body or not. Those of them which are
+ non-local to the body may well be local to the block in the head of which the
+ procedure declaration appears.
+
+ <p>The procedure body always acts like a block, whether it has the form of one or
+ not. Consequently the scope of any label labelling a statement within the body
+ or the body itself can never extend beyond the procedure body.
+
+ <p>In addition, a procedure with parameters in certain respects acts as if a
+ fictitious block embraced the procedure body. The formal parameters then
+ correspond to variables declared local to this fictitious block. Thus, if
+ the identifier of a formal parameter is declared anew within the procedure
+ body, it is thereby given a local significance and actual parameters which
+ correspond to it are invisible throughout the scope of this inner local
+ quantity.
+
+ <p>No identifier may appear more than once in any one formal parameter list, nor
+ may a formal parameter list contain the procedure identifier of the same
+ procedure heading.
+
+ <p>See also 4.6.
+
+ <p><b>Examples</b>:
+<pre>
+        <b>procedure</b> transpose(a,n);
+        <b>array</b> a; <b>integer</b> n;
+        <b>begin</b> <b>real</b> w; <b>integer</b> i,k;
+              <b>for</b> i:=1 <b>step</b> 1 <b>until</b> n <b>do</b>
+                  <b>for</b> k:=1+i <b>step</b> 1 <b>until</b> n <b>do</b>
+                  <b>begin</b> w:=a(i,k);
+                        a(i,k):=a(k,i);
+                        a(k,i):=w
+                  <b>end</b>
+        <b>end</b> transpose;
+
+        <b>integer</b> <b>procedure</b> factorial(n); <b>integer</b> n;
+          factorial:= <b>if</b> n=0 <b>then</b> 1 <b>else</b> n*factorial(n-1);
+
+        <b>procedure</b> absmax(a,n,m,y,i,k);
+           <b>name</b> i, k, y ; <b>array</b> a; <b>integer</b> n,m,i,k; <b>real</b> y;
+        <b>comment</b> The absolute greatest element of the matrix a, of size n by m
+                is transferred to y, and the subscripts of this element to
+                i and k;
+        <b>begin</b> <b>integer</b> p,q;
+              y:=0; i:=k:=1;
+              <b>for</b> p:=1 <b>step</b> 1 <b>until</b> n <b>do</b>
+                  <b>for</b> q:=1 <b>step</b> 1 <b>until</b> m <b>do</b>
+                      <b>if</b> abs(a(p,q))&gt;y <b>then</b> <b>begin</b> y:=abs(a(p,q));
+                            i:=p; k:=q
+                      <b>end</b>
+        <b>end</b> absmax;
+
+        <b>procedure</b> innerproduct(a,b,k,p,y); <b>name</b> p,y,a,b;
+        <b>integer</b> k,p; <b>real</b> y,a,b;
+        <b>begin</b> <b>real</b> s; <b>integer</b> pp;
+              s:=0;
+              <b>for</b> pp:=1 <b>step</b> 1 <b>until</b> k <b>do</b>
+                  <b>begin</b> p:= pp; s:=s+a*b; <b>end</b>;
+              y:=s
+        <b>end</b> innerproduct;
+
+        <b>text</b> <b>procedure</b> mystrip(t); <b>text</b> t;
+        mystrip:- <b>if</b> t.sub(t.length,1)=&quot; &quot;
+                  <b>then</b> mystrip(t.sub(1,t.length-1)) <b>else</b> t;
+</pre>
+<h3>Values of function designators</h3>
+
+ <p>For a procedure declaration to define the value of a function designator, the
+ type associated with the procedure identifier must be declared through the
+ appearance of a type declarator as the very first symbol of the procedure
+ declaration. This identifier is implicitly assigned an initial value (see 5.7).
+ The identifier may, in addition, occur (one or more times) as a destination
+ within the procedure body.
+
+ <p>The (dynamically) last value so assigned is used to continue the evaluation of
+ the expression in which the function designator occurs. Any visible occurrence
+ of the procedure identifier within the body of the procedure other than as a
+ destination in an assignment statement denotes (recursive) activation of the
+ procedure.
+
+ <p>If a goto-statement within the procedure, or within any other procedure
+ activated by it, leads to an exit from the procedure, other than through its
+ end, then the execution of all statements that have been started but not yet
+ completed and which do not contain the label to which the goto-statement leads,
+ is abandoned. The values of all variables that still have significance remain
+ as they were immediately before execution of the goto-statement (cf. 7.3.5).
+
+ <p>If a function designator is used as a procedure statement, then the resulting
+ value is discarded, but such a statement may be used, if desired, for the
+ purpose of invoking side effects.
+
+<h3>Parameter specification</h3>
+<pre>
+     formal-parameter-part
+         =  &quot;(&quot;  formal-parameter  { , formal-parameter }  &quot;)&quot;
+
+     formal-parameter
+         =  identifier
+
+     specification-part
+         =   specifier  identifier-list  { ; specifier identifier-list }
+
+     specifier
+         =  type  [ <b>array</b> | <b>procedure</b> ]
+         |  <b>label</b>
+         |  <b>switch</b>
+</pre>
+ <p>The procedure heading may include a specification part, giving information
+ about the kinds and types of the formal parameters. In this part no formal
+ parameter may occur more than once.
+<h3>Parameter transmission modes</h3>
+<pre>
+     mode-part
+         =  name-part  [ value-part ]
+         |  value-part [ name-part ]
+
+     name-part
+         =  <b>name</b>  identifier-list  ;
+
+     value-part
+         =  <b>value</b>  identifier-list  ;
+
+     identifier-list
+         =  identifier  { , identifier }
+</pre>
+ <p>There are three modes of parameter transmission: "call by value", "call by
+ reference" and "call by name".
+
+ <p>The default transmission mode is call by value for value type parameters and
+ call by reference for all other kinds of parameters.
+
+ <p>The available transmission modes are shown in fig. 5.1 for the different kinds
+ of parameters to procedures.
+
+<pre>
+     --------------------------------------------------------------
+    |                       |         Transmission modes           |
+    |   Parameter           | - - - - - - - - - - - - - - - - - - -|
+    |                       |  by value | by reference |  by name  |
+    |--------------------------------------------------------------|
+    |   value type          |     D     |       I      |     O     |
+    |   object ref. type    |     I     |       D      |     O     |
+    |   <b>text</b>                |     O     |       D      |     O     |
+    |   value type <b>array</b>    |     O     |       D      |     O     |
+    |   reference type <b>array</b>|     I     |       D      |     O     |
+    |   procedure           |     I     |       D      |     O     |
+    |   type procedure      |     I     |       D      |     O     |
+    |   label               |     I     |       D      |     O     |
+    |   switch              |     I     |       D      |     O     |
+     --------------------------------------------------------------
+
+        D:  default mode       O:  optional mode       I:  illegal
+
+               fig. 5.1 Transmission modes for procedures
+</pre>
+<h2>Class declaration</h2>
+<pre>
+     class-declaration
+         =  [ prefix ]  main-part
+
+     prefix
+         =  class-identifier
+
+     main-part
+         =  <b>class</b>  class-identifier
+            [ formal-parameter-part ; [ value-part ]
+              specification-part ]  ;
+            [ protection-part ; ]
+            [ virtual-part ; ]
+            class-body
+
+     class-identifier
+         =  identifier
+
+     class-body
+         =  statement
+         |  split-body
+
+     split-body
+         =  initial-operations  inner-part  final-operations
+
+     initial-operations
+         =  ( <b>begin</b> | block-head ; )  { statement ; }
+
+     inner-part
+         =  { label : }  <b>inner</b>
+
+     final-operations
+         =  <b>end</b>
+         |  ;  compound-tail
+</pre>
+
+ <p>A class declaration serves to define the class associated with a class
+ identifier. The class consists of "objects" each of which is a dynamic instance
+ of the class body.
+
+ <p>An object is generated as the result of evaluating an object generator, which
+ is analogous to the evaluation (call) of a function designator, see 3.8.2 or
+ 4.7.
+
+ <p>A class body acts like a block whether it takes that form or not. A split body
+ acts as a block in which the symbol <b>inner</b> represents a dummy statement.
+
+ <p>For a given object the formal parameters, the quantities specified in the
+ virtual part, and the quantities declared local to the class body are called
+ the "attributes" of the object. A declaration or specification of an attribute
+ is called an "attribute definition".
+
+ <p>Specification (in the specification part) is necessary for each formal
+ parameter. The parameters are treated as variables local to the class body.
+ They are initialized according to the rules of parameter transmission, (see
+ 5.5.5 below). The following specifiers are accepted:
+<pre>
+                <type>, <b>array</b>, and <type> <b>array</b>.
+</pre>
+ <p><b>Note</b>: Call by name is not available for parameters of class declarations.
+
+ <p>Attributes defined in the virtual part are called "virtual quantities". They do
+ not occur in the formal parameter list. The virtual quantities have some
+ properties which resemble formal parameters called by name. However, for a
+ given object the environment of the corresponding "actual parameters" is the
+ object itself, rather than that of the generating call. See 5.5.3.
+
+ <p>Identifier conflicts between formal parameters and other attributes defined in
+ a class declaration are illegal.
+
+ <p>The declaration of an array attribute may in a constituent subscript bound
+ expression make reference to the formal parameters of the class declaration,
+ but subscript bound expressions which refer to attributes other than the formal
+ parameters of the class declaration (or its prefixes, see 5.5.2) are illegal.
+
+<h3>Subclasses</h3>
+
+ <p>A class declaration with the prefix "C" and the class identifier "D" defines a
+ subclass D of the class C. An object belonging to the subclass consists of a
+ "prefix part", which is itself an object of the class C, and a "main part"
+ described by the main part of the class declaration. The two parts are
+ "concatenated" to form one compound object. The class C may itself have a
+ prefix.
+
+ <p>The following restrictions must be observed in the use of prefixes:
+<ol>
+<li>A class must not occur in its own prefix sequence (see below).
+
+<li>A class can be used as prefix only at the block level at which it
+         is declared. A system class used as a prefix is, together with all
+         classes of its prefix chain, considered to be declared in the
+         smallest block enclosing its textual occurrence. Thus redeclarations
+         may occur at inner block levels of a program. An implementation
+         may restrict the number of different block levels at which such
+         prefixes may be used (see chapters 6, 10, 11 and 12).
+</ol>
+ <p>Let C1, C2, ... , Cn be classes such that C1 has no prefix and Ck has the
+ prefix Ck-1 (k = 2,3,...,n). Then C1, C2, ... , Ck-1 is called the "prefix
+ sequence" of Ck (k = 2,3,...,n). The subscript k of Ck (k = 1,2,...,n) is
+ called the "prefix level" of the class. Ci is said to "include" Cj if i <= j,
+ and Ci is called a "subclass" of Cj if i > j (i, j = 1,2,...,n). The prefix
+ level of a class D is said to be <b>inner</b> to that of a class C if D is a
+ subclass of C, and "outer" to that of C if C is a subclass of D.
+
+ <p><b>Example</b>
+
+ <p>Figure 5.2 depicts a class hierarchy consisting of five classes, A, B, C, D and
+ E:
+<pre>
+                  <b>class</b> A .....;
+                A <b>class</b> B .....;
+                B <b>class</b> C .....;
+                B <b>class</b> D .....;
+                A <b>class</b> E .....;
+</pre>
+ <p>A capital letter denotes a class. The corresponding lower case letter
+ represents the attributes of the main part of an object belonging to that
+ class. In an implementation of the language, the object structures shown in
+ fig. 5.3 indicate the allocation in memory of the values of those attributes
+ which are simple variables.
+<pre>
+
+                                    A       <b>class</b> A
+                                    .         - includes: A,B,C,D,E
+                                  .   .       - outer to: B,C,D,E
+                                .       .
+                              .           .
+   <b>class</b> B                   B             E
+     - includes: B,C,D     .   .
+     - outer to: C,D     .       .
+     - inner to: A     .           .
+                     .               .
+                    C                 D
+
+
+                                Fig. 5.2
+
+
+
+            Objects of classes A, B, C, D and E respectively:
+
+
+   .-------.     .-------.     .-------.     .-------.     .-------.
+   .       .     .       .     .       .     .       .     .       .
+   .   a   .     .   a   .     .   a   .     .   a   .     .   a   .
+   .       .     .       .     .       .     .       .     .       .
+    -------      .-------.     .-------.     .-------.     .-------.
+                 .       .     .       .     .       .     .       .
+                 .   b   .     .   b   .     .   b   .     .   e   .
+                 .       .     .       .     .       .     .       .
+                  -------      .-------.     .-------.      -------
+                               .       .     .       .
+                               .   c   .     .   d   .
+                               .       .     .       .
+                                -------       -------
+
+
+
+                                  Fig. 5.3
+</pre>
+<h3>Concatenation</h3>
+
+ <p>Let Cn be a class with the prefix sequence C1, C2, ... , Cn-1, and let X be an
+ object belonging to Cn. Informally, the concatenation mechanism has the
+ following consequences.
+<ol>
+<li>X has a set of attributes which is the union of those defined in
+         C1, C2, ... , Cn. An attribute defined in Ck (1 &lt;= k &lt;= n) is said
+         to be defined at prefix level k.
+
+<li>X has an "operation rule" consisting of statements from the bodies
+         of these classes in a prescribed order. A statement from Ck is said
+         to belong to prefix level k of X.
+
+<li>A statement at prefix level k of X has access to all attributes of
+         X defined at prefix levels equal to or outer to k, but not directly
+         to attributes made invisible by conflicting definitions at levels
+         &lt; k. (These invisible attributes may nevertheless be accessed, for
+         example through use of procedures or <b>this</b>.)
+
+<li>A statement at prefix level k of X has no immediate access to
+         attributes of X defined at prefix levels inner to k, except through
+         virtual quantities. (See 5.5.3.)
+
+<li>In a split body at prefix level k, the symbol <b>inner</b> represents
+         those statements in the operation rule of X which belong to prefix
+         levels inner to k, or a dummy statement if k = n. If none of
+         C1, ... , Cn-1 has a split body the statements in the operation rule
+         of X are ordered according to ascending prefix levels.
+</ol>
+ <p>A compound object could be described formally by a "concatenated" class
+ declaration. The process of concatenation is considered to take place prior to
+ program execution. In order to give a precise description of that process, we
+ need the following definition.
+
+ <p>An occurrence of an identifier which is part of a given block is said to be an
+ "uncommitted occurrence in that block", except if it is the attribute
+ identifier of a remote identifier (see 5.5.6), or is part of an inner block in
+ which it is given a local significance. In this context a "block" may be a
+ class declaration not including its prefix and class identifier, or a procedure
+ declaration not including its procedure identifier.
+
+ <p><b>Note</b>: An uncommitted identifier occurrence in a block may well have a
+       local significance in that block.
+
+ <p>The class declarations of a given class hierarchy are processed in an order of
+ ascending prefix levels. A class declaration with a non-empty prefix is
+ replaced by a concatenated class declaration obtained by first modifying the
+ given one in two steps.
+<ol>
+<li>If the prefix refers to a concatenated class declaration,
+          in which identifier substitutions have been carried out,
+          then the same substitutions are effected for uncommitted
+          identifier occurrences within the main part.
+
+<li>If now identifiers of attributes defined within the main part have
+          uncommitted occurrences within the prefix class, then all
+          uncommitted occurrences of these identifiers within the main part
+          are systematically changed to avoid name conflicts. Identifiers
+          corresponding to virtual quantities defined in the prefix class
+          are not changed.
+</ol>
+ <p>The concatenated class declaration is defined in terms of the given
+ declaration, modified as above, and the concatenated declaration of the prefix
+ class.
+<ol>
+<li>Its formal parameter list consists of that of the prefix
+          class followed by that of the main part.
+
+<li>Its value part, specification part, and virtual part are
+          the unions (in an informal but obvious sense) of those of
+          the prefix class and those of the main part. If the
+          resulting virtual part contains more than one occurrence of
+          some identifier, the virtual part of the given class
+          declaration is illegal.
+
+<li>Its class body is obtained from that of the main part in
+          the following way, assuming the body of the prefix class is
+          a split body. The <b>begin</b> of the block head is replaced by a
+          copy of the block head of the prefix body, a copy of the
+          initial operations of the prefix body is inserted after the
+          block head of the main part and the <b>end</b> of the compound
+          tail of the main part is replaced by a copy of the compound
+          tail of the prefix body. If the prefix class body is not a
+          split body, it is interpreted as if the symbols ";<b>inner</b>"
+          were inserted in front of the <b>end</b> of its compound tail.<br>
+
+          If in the resulting class body two matching declarations
+          for a virtual quantity are given (see 5.5.3), the
+          one copied from the prefix class body is deleted.
+</ol>
+ <p><b>Example</b>
+<pre>
+            <b>class</b> point(x,y); <b>real</b> x,y;
+                <b>begin</b> <b>ref</b> (point) <b>procedure</b> plus(P); <b>ref</b> (point) P;
+                           plus:- <b>new</b> point(x+P.x, y+P.y); <b>end</b> point;
+</pre>
+ <p>An object of the class point is a representation of a point in a cartesian
+ plane. Its attributes are x, y and plus, where plus represents the operation of
+ vector addition.
+<pre>
+            point <b>class</b> polar;
+                 <b>begin</b> <b>real</b> r,v;
+                    <b>ref</b> (polar) <b>procedure</b> plus(P); <b>ref</b> (point) P;
+                           plus :- <b>new</b> polar(x+P.y, y+P.y);
+                    r:= sqrt(x**2 + y**2); v:= arctan(x,y); <b>end</b> polar;
+</pre>
+ <p>An object of the class polar is a "point" object with the additional attributes
+ r, v and a redefined "plus" operation. The values of r and v are computed and
+ assigned at the time of object generation.
+<h3>Virtual quantities</h3>
+<pre>
+     virtual-part
+         =  <b>virtual</b>  :  virtual-spec  ;  {  virtual-spec  ;  }
+
+     virtual-spec
+         =  specifier  identifier-list
+         |  <b>procedure</b>  procedure-identifier  procedure-specification
+</pre>
+
+ <p>Virtual quantities serve a double purpose:
+<ol>
+<li>to give access at one prefix level of an object to
+             attributes declared at inner prefix levels, and
+
+<li>to permit attribute redeclarations at one prefix level
+             valid at outer prefix levels.
+</ol>
+ <p>The following specifiers are accepted in a virtual part:
+<pre>
+              <b>label</b>, <b>switch</b>, <b>procedure</b> and <type> <b>procedure</b>.
+</pre>
+ <p>A virtual procedure may optionally be specified with respect to its type, and
+ the type, kind, and transmission mode of its parameters (if any) (see 6.3).
+
+ <p>A virtual quantity of an object is either "unmatched" or is identified with a
+ "matching" attribute, which is an attribute whose identifier coincides with
+ that of the virtual quantity, declared at the prefix level of the virtual
+ quantity or at an inner one. The matching attribute must be of the same kind as
+ the virtual quantity.
+
+ <p>A virtual procedure quantity that contains a procedure specification, can only
+ be matched by a procedure of the same type, and with the same procedure
+ heading as that of the procedure specification. Otherwise, the type of the
+ matching quantity (at a given prefix level) must coincide with or be
+ subordinate to (see 2.4) that of the virtual specification and that of any
+ matching quantity declared at any outer prefix level.
+
+ <p>At any given prefix level PL inner or equal to that of a virtual specification,
+ and in the abscence of a procedure specification, the type of the virtual
+ quantity is
+<ul>
+<li>if there is no match at prefix levels outer or equal to PL,
+            then that given in the virtual specification,
+
+<li>if there is a match at a prefix level outer or equal to PL,
+            then that of the match at the innermost prefix level outer
+            or equal to PL.
+</ul>
+ <p>It is a consequence of the concatenation mechanism that a virtual quantity of a
+ given object can have at most one matching attribute. If matching declarations
+ have been given at more than one prefix level of the class hierarchy, then the
+ one is valid which is given at the innermost prefix level outer or equal to
+ that of the main part of the object. The match is valid at all prefix levels of
+ the object equal or inner to that of the virtual specification.
+
+ <p><b>Example</b>
+
+ <p>The following class expresses a notion of "hashing", in which the "hash"
+ algorithm itself is a "replaceable part".
+<pre>
+       <b>class</b> hashing (n); <b>integer</b> n;
+       <b>virtual</b>: <b>integer</b> <b>procedure</b> hash;
+       <b>begin</b> <b>integer</b> <b>procedure</b> hash(t); <b>text</b> t;
+             <b>begin</b> <b>integer</b> i;
+                   <b>while</b> t.more <b>do</b> i:= i + rank(t.getchar);
+                   hash:= mod(i,n);
+             <b>end</b> hash;
+             <b>text</b> <b>array</b> table (0:n-1); <b>integer</b> entries;
+             <b>integer</b> <b>procedure</b> lookup (t,old);
+             <b>name</b> old; <b>Boolean</b> old; <b>text</b> t;
+             <b>begin</b> <b>integer</b> i,istart; <b>Boolean</b> entered;
+                   i:= istart:= hash(t);
+                   <b>while</b> <b>not</b> entered <b>do</b>
+                   <b>begin</b> <b>if</b> table(i)==notext <b>then</b>
+                         <b>begin</b> table(i):- copy(t);
+                               entries:= entries + 1;
+                               entered:= <b>true</b>;
+                               old:=<b>false</b>
+                         <b>end</b> <b>else</b> <b>if</b> table(i) = t
+                               <b>then</b> old:= entered:= true
+                               <b>else</b> <b>begin</b> i:= i + 1;
+                                    <b>if</b> i=n <b>then</b> i:=0;
+                                    <b>if</b> i=istart <b>then</b> error(&quot;Table full.&quot;)
+                               <b>end</b>
+                   <b>end</b>;
+                   lookup:= i;
+             <b>end</b> lookup;
+       <b>end</b> hashing;
+
+       hashing <b>class</b> ALGOL_hash;
+       <b>begin</b> <b>integer</b> <b>procedure</b> hash(T); <b>text</b> T;
+             <b>begin</b> <b>integer</b> i; <b>character</b> c;
+                   T.setpos(1);
+                   <b>while</b> T.more <b>do</b> <b>begin</b> c:= T.getchar;
+                         <b>if</b> c &lt;&gt; ' ' <b>then</b> i:= i + rank(c)
+                   <b>end</b>;
+                   hash:= mod(i,n);
+             <b>end</b> hash;
+       <b>end</b> ALGOL_hash;
+</pre>
+<h3>Attribute protection</h3>
+<pre>
+     protection-part
+         =  protection-specification  { ; protection-specification }
+
+     protection-specification
+         =  <b>hidden</b>  identifier-list
+         |  <b>protected</b>  identifier-list
+         |  <b>hidden</b> <b>protected</b>  identifier-list
+         |  <b>protected</b> <b>hidden</b>  identifier-list
+</pre>
+ <p>The protection specification makes it possible to restrict the visibility of
+ class attribute identifiers.
+
+ <p>A class attribute, X, which is specified <b>protected</b> in <b>class</b> C is only
+ visible:
+<ol>
+<li>within the body of C or its subclasses
+
+<li>within blocks prefixed by C or any subclass of C.
+</ol>
+ <p>In any other context the meaning of the identifier X is as if the attribute
+ definition of X were absent.
+
+ <p>Access to a protected attribute is, subject to the restriction above, legal by
+ remote accessing.
+
+ <p>A class attribute may be specified <b>protected</b> only at the prefix level of its
+ definition. Note that a virtual attribute may only be specified <b>protected</b> in
+ the class heading in which the virtual specification occurs.
+
+ <p>Attributes of the classes Simset and Simulation are protected.
+
+ <p>A visible class attribute, X, specified <b>hidden</b> in class C is not visible
+ within subclasses of C or blocks prefixed by C or any subclass of C. In this
+ context the meaning of the identifier X is as if the attribute definition of X
+ were absent.
+
+ <p>Only a protected attribute may be specified <b>hidden</b>. However, this
+ specification may occur at a prefix level inner to the protected specification.
+
+ <p>The effect of specifying an attribute <b>hidden</b> <b>protected</b> or <b>protected</b>
+ <b>hidden</b> is identical to that of specifying it as both <b>protected</b> and
+ <b>hidden</b>.
+
+ <p>Conflicting or illegal hidden and/or protected specifications constitute a
+ error.
+
+ <p><b>Note</b>: Specifying a virtual quantity <b>hidden</b> effectively disables further
+       matching at inner levels.<br>
+
+       If in the prefix sequence there are several attributes with the same
+       identifier as that of a hidden specification, and these are previously
+       protected, but not hidden, the innermost accessible attribute is hidden.
+<h3>Parameter transmission modes</h3>
+
+ <p>There are two modes of parameter transmission available for classes:
+ "call by value" and "call by reference".
+
+ <p>The default transmission mode is call by value for value type parameters and
+ call by reference for all other kinds of parameters.
+
+ <p>The available transmission modes are shown in fig. 5.4 for parameters of
+ class declarations.
+
+<pre>
+          --------------------------------------------------
+         |                       |     Transmission modes   |
+         |   Parameter           | - - - - - - - - - - - - -|
+         |                       |  by value | by reference |
+         |--------------------------------------------------|
+         |   value type          |     D     |       I      |
+         |   object ref. type    |     I     |       D      |
+         |   <b>text</b>                |     O     |       D      |
+         |   value type <b>array</b>    |     O     |       D      |
+         |   reference type <b>array</b>|     I     |       D      |
+          --------------------------------------------------
+
+            D: default mode  O: optional mode  I:  illegal
+
+         fig. 5.4.  Parameter transmission modes for classes
+</pre>
+ <p>For further details on parameter transmission modes, see 4.6.
+<h3>Remote accessing</h3>
+
+ <p>An attribute of an object is identified completely by the following items of
+ information:
+<ol>
+<li>the object,
+
+<li>a class which is outer to or equal to that of the object,
+             and
+
+<li>an attribute identifier defined in that class or in any
+             class belonging to its prefix sequence.
+</ol>
+ <p>Item 2 is textually defined for any attribute identification. The prefix level
+ of the class is called the "access level" of the attribute identification.
+
+ <p>Consider an attribute identification whose item 2 is the class C. Its attribute
+ identifier, item 3, is subjected to the same identifier substitutions as those
+ which would be applied to an uncommitted occurrence of that identifier within
+ the main part of C, at the time of concatenation. In that way, name conflicts
+ between attributes declared at different prefix levels of an object are
+ resolved by selecting the one defined at the innermost prefix level not inner
+ to the access level of the attribute identification.
+
+ <p>An uncommitted occurrence within a given object of the identifier of an
+ attribute of the object is itself a complete attribute identification. In this
+ case items 1 and 2 are implicitly defined as, respectively, the given object
+ and the class associated with the prefix level of the identifier occurrence.
+
+ <p>If such an identifier occurrence is located in the body of a procedure
+ declaration (which is part of the object), then, for any dynamic instance of
+ the procedure, the occurrence serves to identify an attribute of the given
+ object, regardless of the context in which the procedure was invoked.
+
+ <p>Remote accessing of attributes, i.e. access from outside the object, is either
+ through the mechanism of "remote identifiers" ("dot notation") or through
+ "connection".
+
+ <p>A text variable is (itself) a compound structure in the sense that it has
+ attributes accessible through the dot notation.
+
+<h3>Fictituous outermost prefix</h3>
+
+ <p>Any class that has no (textually given) prefix is by definition prefixed by a
+ fictitious class whose only attribute is:
+<pre>
+          <b>procedure</b> detach; ... ;  (see 7.3.1)
+</pre>
+ <p>Thus every class object or instance of a prefixed block has this attribute.
+<h2>Scope and visibility rules</h2>
+
+ <p>This section contains the scope and visibility rules governing the identifiers
+ introduced in the program.
+
+ <p>An identifier is introduced either implicitly (through a definition in one of
+ the system classes ENVIRONMENT and BASICIO, or as <b>text</b> attribute), or
+ explicitly
+<ol>
+<li>By its occurrence as a class attribute either in the formal
+         parameter part or in the head of the class body. This is called an
+         "attribute definition".
+
+<li>By its occurrence as a class attribute in the virtual part, but not
+         in the head of the class body. This is called an "unmatched virtual
+         definition".
+
+<li>By its occurrence in a formal parameter part of a procedure. This
+         is called a "formal parameter definition".
+
+<li>By being declared in the head of a subblock or prefixed block. This
+         is called a "local declaration".
+
+<li>By its occurrence as a label. In this case an implicit declaration
+         is inserted in the local block. If this block is a class body, the
+         label definition is called a "label attribute definition", otherwise
+         it is considered a special case of one of 3 or 4 above.
+
+<li>By its occurrence in an external declaration which is part of an
+         external head of a module. This is called a "head definition".
+</ol>
+ <p>The occurrence of a system-defined class identifier as a prefix (see 5.5.1(2))
+ within some block leads to insertion of implicit declarations both of the
+ referenced class and of all classes in its prefix chain (if any) in the head of
+ the local block. Within any block such declarations are inserted only once.
+ These declarations are then considered special cases of either rule 1 or 4
+ above.
+
+ <p>Use of such an identifier other than as a prefix refers to either such an
+ inserted declaration, or to the definition within ENVIRONMENT or BASICIO.
+
+ <p>The "local block" of an identifier definition is the textually closest
+ embracing block (subblock, prefixed block, or procedure or class body),
+ including the fictitious blocks surrounding the controlled statement of a for-
+ statement, a procedure or class declaration, a connection block etc.
+ The identifier (and its definition) is said to be local within this block.
+
+ <p>A distinction is made between the "scope" and the "visibility" of an identifier
+ definition and its associated identifier as follows.
+
+     The <u>scope</u> of an identifier definition is that part of the program
+     text in which it may have an effect.
+
+     An identifier definition is said to be <b>visible</b> at (or from) a
+     given point in the program text when an occurrence of the identifier
+     at this point can refer to the quantity of the declaration in question.
+
+ <p>The same identifier may be defined in several places in the program and may
+ consequently be associated with different quantities. The scopes of such
+ definitions of the same identifier may thus overlap, for instance in the
+ case of an identifier redeclared in an inner block.
+
+ <p>At a particular point in the program text where a given identifier is visible
+ there can be at most one definition associated with that identifier, e.g. in
+ the case of redeclaration as mentioned only one of the definitions is visible
+ at any given point within the union of their scopes.
+
+ <p>The exact meaning of these terms will be defined in the sequel for each kind
+ of definition.
+
+<h3>Scope of identifier definitions</h3>
+<ol>
+<li>The scope of an attribute definition is the same as that of
+         the class declaration in which the definition occurs.
+
+<li>The scope of an unmatched virtual declaration is the same as that of
+         the class declaration in which the definition occurs.
+
+<li>The scope of a formal parameter definition is the procedure body.
+
+<li>The scope of a local declaration is the textual extent of
+         its local block, i.e. from the <b>begin</b> of the block in question
+         to the matching <b>end</b>.
+
+<li>The scope of a label or switch attribute definition is the protection
+         part, the virtual part, and the body of the class in which the
+         definition occurs, extended by the protection part and body of all
+         its subclasses.
+
+<li>The scope of a head definition is the source module in which it
+         occurs. If the head is followed by a class or procedure declaration
+         the scope is extended by the scope of that declaration.
+
+<li>The scope of a separately compiled declaration is the definition
+         itself, extended with the scopes of all external declarations that
+         reference the definition in question.
+
+<li>The scopes of attributes of system classes extend over all source
+         modules.
+</ol>
+<h3>Visibility of identifiers</h3>
+
+ <p>Identifier definitions can only be visible within their scope. The visibility
+ of a particular definition may within its scope be restricted by
+<ol type="a">
+<li>the occurrence of an identifier definition with the same identifier
+         (a "redefinition" of the identifier) within some construct enclosed
+         by the local block of the former definition. Within their common
+         scope only the innermost of such redefinitions are visible.
+
+<li>the occurrence of a redefinition at some inner prefix level.
+
+<li>remote access, which may cause some identifier definitions to
+         become invisible within the inspection block or dot notation.
+
+<li>use of <b>this</b> or <b>qua</b> which may cause one or more redefinitions
+         (of type b) to be temporarily suspended.
+
+<li>a protection part of the class declaration to which the definition
+         is local (see 5.5.4).
+</ol>
+ <p>Redefinition of an identifier is not allowed at the head of its local block.
+
+ <p><b>Note</b>: This prohibits the occurrence of two definitions of the same
+       identifier in the same block. A formal procedure parameter may,
+       however, be redefined in the head of the procedure body belonging to
+       its procedure declaration. Such a redeclaration effectively restricts
+       the visibility of the formal parameter to its associated value part,
+       name part and specification part. Thus the only effect of such a
+       parameter is the possible side effects resulting from its
+       evaluation.
+
+ <p>In the detailed visibility rules given below the word "visible" means "visible
+ but for possible effects of redefinitions or other restrictions as stated
+ above".
+<ol>
+<li>An attribute definition is visible within the protection part
+         and the body of its class, and within all classes or blocks
+         prefixed by that class identifier.<br>
+
+         Formal parameters of the class are, in addition, visible within the
+         value part and the specification part of the class declaration.
+         Attributes which are not formal parameters are in addition visible
+         within the virtual parts of its class and of all its subclasses.
+
+         <b>Note</b>: The visibility of an attribute definition may be restricted
+               or extended as noted under c)-e) above.
+
+<li>An unmatched virtual definition has the same visibility as an
+         attribute definition which is not a formal parameter of the class.
+
+<li>A formal parameter definition is visible within the value part,
+         name part, specification part, and within the body of the procedure
+         in which it occurs.
+
+<li>A local declaration is visible within its scope.
+
+<li>A label or switch attribute definition is visible within its scope.
+
+<li>A head definition is visible within its scope.
+
+<li>A separately compiled definition is visible, together with all
+         external definitions of its external head (if any), within the
+         scope of an external declaration which refers to the definition.<br><br>
+
+ <b>Note</b>: If an external procedure declaration is given with a procedure
+       binding, the declaration defines two identifiers, occurring textually
+       before and after <b>is</b>. The scope and visibility of the definition given
+       by the procedure binding follows the rules stated above, while the
+       identifier given in the external item is invisible elsewhere.<br><br>
+
+       A possible kind identifier of an external procedure declaration is
+       invisible elsewhere.
+</ol>
+<h3>Dynamic aspects of scope and visibility rules</h3>
+
+ <p>Apart from the static rules given in the preceding sections, all occurrences of
+ an identifier (except within its definition) have a dynamic aspect. Such an
+ identifier refers not only to its static definition but also to some object
+ generated from the declaration to which the definition is local. Thus, for
+ example, the occurrence of a formal parameter identifier within a procedure or
+ class declaration references some instantiated object of the procedure or
+ class.
+
+ <p>See also 2.4.1 and 3.8.1.
+<h2>Initialization</h2>
+
+ <p>Any declared variable is initialized at the time of entry into the block to
+ which the variable is local. The initial contents depend on the type of the
+ variable:
+<pre>
+                real-type              0.0
+                integer-type           0
+                <b>Boolean</b>                <b>false</b>
+                <b>character</b>              '!0!'
+                object ref. type       <b>none</b>
+                <b>text</b>                   <b>notext</b>
+</pre>
+<h2>Constant declarations</h2>
+<pre>
+     constant-element
+         =  identifier  &quot;=&quot;  value-expression
+         |  identifier  &quot;=&quot;  text-expression
+</pre>
+ <p>An identifier which is declared by means of a constant element has a fixed
+ value. Any attempt to assign to or otherwise alter the value of such an
+ identifier constitutes an error. The evaluation of the expression takes place
+ in the same manner as the evaluation of the bounds of an array. Thus any
+ variables referenced in this expression contribute their values at the time of
+ their evaluation, and any subsequent change does not affect the constant.
+
+ <p>If the identifier is of arithmetic type then the value expression must also be
+ of arithmetic type. Type conversion may be invoked following the rules given
+ for arithmetic assignment (see 4.1.1). Otherwise, strict type correspondence is
+ required between the type of the declaration and the type of the expression.
+
+ <p>The constant element is subject to the following exception from the normal
+ rules governing the occurrence of expressions in declarations.
+<ul>
+<li>Any occurrence within the expression of an identifier declared in the
+     same block head must refer to a constant declaration, which must occur
+     textually before the referencing constant element.
+</ul>
+ <p>The constant element of a block head are evaluated from left to right.
+</body>
+</html>

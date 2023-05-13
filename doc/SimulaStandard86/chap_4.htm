@@ -1,0 +1,1020 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="../includes/standard.css">
+<title>Chapter 4: Statements</title>
+</head>
+<body>
+<h1>Chapter 4:<br>
+STATEMENTS</h1>
+<pre>
+    statement
+        =  { label : }  unconditional-statement
+        |  { label : }  conditional-statement
+        |  { label : }  for-statement
+
+    unconditional-statement
+        =  assignment-statement
+        |  while-statement
+        |  goto-statement
+        |  procedure-statement
+        |  object-generator
+        |  connection-statement
+        |  compound-statement
+        |  block
+        |  dummy-statement
+        |  activation-statement
+</pre>
+<p>The units of operation within the language are called
+statements. They are normally executed consecutively as
+written. The sequence of operations may for instance be
+broken by goto-statements, which define their successor
+explicitly, or by sequencing procedure calls, which define
+their successor implicitly. It may be shortened by
+conditional statements, which may cause certain statements
+to be skipped. It may be lengthened by for-statements and
+while-statements which cause certain statements to be
+repeated.
+
+<p>In order to make it possible to define an explicit dynamic
+succession, statements may be provided with labels.
+
+<p>Since sequences of statements may be grouped together into
+compound statements and blocks the definition of statement
+must necessarily be recursive. Also since declarations,
+described in chapter 5, enter fundamentally into the
+syntactic structure, the syntactic definition of statements
+must suppose declarations to be already defined.
+<h2>Assignment statements</h2>
+<pre>
+    assignment-statement
+        =  value-assignment
+        |  reference-assignment
+
+    value-assignment
+        =  value-left-part  :=  value-right-part
+
+    value-left-part
+        =  destination
+        |  simple-text-expression
+
+    value-right-part
+        =  value-expression
+        |  text-expression
+        |  value-assignment
+
+    destination
+        =  variable
+        |  procedure-identifier
+
+    reference-assignment
+        =  reference-left-part  :-  reference-right-part
+
+    reference-left-part
+        =  destination
+
+    reference-right-part
+        =  reference-expression
+        |  reference-assignment
+</pre>
+<p>Assignment statements serve for assigning the value of an
+expression to one or several destinations. Assignment to a
+procedure identifier may only occur within the body of a
+procedure defining the value of the function designator
+denoted by that identifier. If assignment is made to a
+subscripted variable, the values of all the subscripts must
+lie within the appropriate subscript bounds, otherwise a
+run-time error will result.
+
+<p>The operator := (read: "becomes") indicates the assignment
+of a value to the value type variable or value type
+procedure identifier which is the left part of the value
+assignment or the assignment of a text value to the text
+frame referenced by the left part.
+
+<p>The operator :- (read: "denotes") indicates the assignment
+of a reference to the reference type variable or reference
+type procedure identifier which is the left part of the
+reference assignment.
+
+<p>A procedure identifier in this context designates a memory
+device local to the procedure instance. This memory device
+is initialised upon procedure entry following the rules
+given in 5.7. The type associated with a procedure
+identifier is given as the first symbol of the
+corresponding procedure declaration.
+
+<p>The value or reference assigned is a (suitably converted)
+representation of the one obtained by evaluating the right
+part of the assignment. If the right part is itself an
+assignment, the value or reference obtained is a copy of
+its constituent left part after that assignment operation
+has been completed.
+
+<p>The process is in the general case understood to take place
+in three steps as follows:
+<ol type="a">
+  <li>Any expression which is, or is part of, the left part of
+    an assignment is evaluated prior to the evaluation of
+    the right part. Within a particular left part,
+    constituent expressions such as subscript expressions
+    are evaluated in sequence from left to right.
+
+  <li>The expression of the ultimate right part is evaluated.
+
+  <li>The value or reference of this expression is assigned to
+    its immediately preceding left part. If the left part is
+    itself part of an assignment, the resulting value or
+    reference is assigned to its immediately preceding left
+    part. The process is repeated until the left part list
+    is exhausted. All assignments are performed with any
+    left part expression having values as evaluated in (a).
+</ol>
+<b>Note</b>: It is not required that, in multiple assignments, all
+      left parts are of the same type, as long as the
+      appropriate type conversion functions are defined.
+
+<p>If the destination is of type <b>Boolean</b> or <b>character</b>, the
+value right part must likewise be of type <b>Boolean</b> or
+<b>character</b>, respectively.
+
+<p>For the description of the text value assignment, see
+4.1.2. There is no value assignment operation for objects.
+
+<p>The type of the value or reference obtained by evaluating
+the right part must coincide with or be subordinate to the
+type of the left part, with the exceptions mentioned in the
+following sections.
+
+<p>If a destination is a formal parameter called by name, and
+the type of the corresponding actual parameter does not
+coincide with that of the formal specification, then the
+assignment operation is carried out in two steps.
+<ol>
+  <li>An assignment is made to a fictitious variable of the
+    type specified for the formal parameter.
+
+  <li>An assignment statement is executed whose left part is
+    the actual parameter and whose right part is the
+    fictitious variable.
+</ol>
+<p>The value or reference obtained by evaluating the
+assignment is, in this case, that of the fictitious
+variable.
+
+<h3>Arithmetic assignment</h3>
+
+<p>If the type of the arithmetic expression differs from that
+associated with the destinations, an appropriate conversion
+function is understood to be automatically invoked. For
+transfer from real to integer type the conversion function
+is understood to yield a result which is the largest
+integral quantity not exceeding E + 0.5 in the mathematical
+sense (i.e. without rounding error) where E is the value of
+the expression.
+
+<p>Conversion from <b>integer</b> to <b>short</b> <b>integer</b> is exact within
+the value range of <b>short</b> <b>integer</b>; outside it constitutes a
+run-time error. Conversion from <b>long</b> <b>real</b> to <b>real</b> is
+performed with correct rounding. If the value range of
+<b>long</b> <b>real</b> exceeds that of <b>real</b> a run-time error may result.
+
+<p>Conversions not mentioned above are performed according to
+the rules given in 3.5.1.
+
+<p><b>Note</b>: The value of a real type expression is defined with
+      only finite accuracy.
+
+<p><b>Note</b>: Consider the statement "X:= i:= Y:= F:= 3.14" where X
+      and Y are <b>real</b> variables, i is an <b>integer</b> variable,
+      and F is a formal parameter called by name and
+      specified <b>real</b>.  If the actual parameter for F is a
+      <b>real</b> variable, then X, i, Y and F are given the
+      values 3, 3, 3.14 and 3.14 respectively. If the
+      actual parameter is an <b>integer</b> variable, the
+      respective values are 3, 3, 3.14 and 3.
+
+<h3>Text value assignment</h3>
+
+<p>Let X be the text variable identified as the result of
+evaluating the left part (see 3.7) of a text value
+assignment, and let Y denote the text variable identified
+by evaluating the corresponding right part. If X references
+a constant text frame, or X.LENGTH < Y.LENGTH, then the
+assignment constitutes an error. Otherwise, the value of Y
+is conceptually extended to the right by X.LENGTH -
+Y.LENGTH blank characters, and the resulting text value is
+assigned as the new contents of the text frame referenced
+by X.
+
+<p><b>Note</b>: If X==<b>notext</b>, the assignment is legal if and only if
+      Y==<b>notext</b>. The effect on X of the assignment "X := Y"
+      is equivalent to that of "X := copy(Y)", regardless
+      of whether or not X and Y overlap.
+
+<p>The position indicators of the left and the right parts are
+ignored and remain unchanged.
+
+<p>If X and Y are non-overlapping texts of the same length
+then, after the evaluation of the value assignment "X:= Y",
+the relation "X=Y" is true.
+
+<p>A text procedure identifier occurring as a value left part
+within the procedure body is interpreted as a text
+variable. The corresponding assignment statement thus
+implies an assignment to the local procedure identifier.
+
+<h3>Text reference assignment</h3>
+
+<p>Let X be the text variable which constitutes the left part
+of a text reference assignment, and let Y denote the
+variable identified by evaluating the corresponding right
+part. The effect of the assignment is defined as the four
+component assignments:
+<pre>
+      X.OBJ    :- Y.OBJ;      X.START  := Y.START;
+      X.LENGTH := Y.LENGTH;   X.POS    := Y.POS;
+</pre>
+<h3>Object reference assignment</h3>
+
+<p>Let the left part of an object reference assignment be qualified by the class
+Cl, and let the right part be qualified by Cr. If the right part is itself a
+reference assignment, Cr is defined as the qualification of its constituent
+left part. Let V be the value obtained by evaluating the right part. The
+legality and effect of the reference assignment depend on relationships between
+Cr, Cl and V.
+<dl>
+<dt>    Case 1.</dt><dd>  Cl is the class Cr or outer to Cr:
+             The reference assignment is legal and the
+             assignment operation is carried out.</dd>
+
+<dt>    Case 2.</dt><dd>  Cl is inner to Cr:
+             The reference assignment is legal. The
+             assignment operation is carried out if V is
+             <b>none</b> or is an object belonging to the class Cl
+             or a class inner to Cl. If not, the execution
+             of the reference assignment constitutes a
+             run-time error.</dd>
+
+<dt>    Case 3.</dt><dd>  Cl and Cr satisfy neither of these relations:
+             The reference assignment is illegal.</dd>
+</dl>
+<p>Similar rules apply to reference assignments implicit in
+for-clauses and the transmission of parameters.
+
+<p><b>Example</b>
+
+<p>Let "point" and "polar" be the classes declared in the
+example of 5.5.2.
+<pre>
+     <b>ref</b> (point) p1, p2; <b>ref</b> (polar) p3;
+     p1:- <b>new</b> polar (3,4); p2:- <b>new</b> point (5,6);
+</pre>
+<p>Now the statement "p3:-p1" assigns to p3 a reference to
+the "polar" object which is the value of p1. The statement
+"p3:-p2" would cause a run-time error.
+
+<h2>Conditional statement</h2>
+<pre>
+    conditional-statement
+        =  if-clause { label : } unconditional-statement
+           [ <b>else</b> statement ]
+        |  if-clause { label : } for-statement
+
+    if-clause
+        =  <b>if</b>  Boolean-expression  <b>then</b>
+</pre>
+<p>Conditional statements cause certain statements to be
+executed or skipped depending on the running values of
+specified Boolean expressions.
+
+<p>Three forms of the conditional statement exist. Let B be a
+Boolean expression, Su an unconditional statement, Sfor a
+for-statement and S a statement. Then, in execution of a
+statement of the form  "<b>if</b> B <b>then</b> Su", B is evaluated.
+If the result is true, Su is executed. If the result is
+false, Su is not executed. If Su is labelled, and a
+goto-statement leads to the label, then B is not evaluated,
+and the computation continues with execution of the
+labelled statement.
+
+<p>The two remaining forms are explained in terms of the
+above, as follows.
+<pre>
+The conditional statement:   is equivalent to:
+
+<b>if</b> B <b>then</b> Sfor               <b>if</b> B <b>then</b> <b>begin</b> Sfor <b>end</b>
+
+<b>if</b>    B                      <b>if</b> B
+<b>then</b>  Su                     <b>then</b> <b>begin</b> Su; <b>goto</b> GAMMA  <b>end</b>;
+<b>else</b>  S                      S;
+                             GAMMA: ...
+</pre>
+<p>If Su, Sfor or S are labelled they are labelled in the
+equivalent construct.
+
+<p><b>Note</b>: The effect of a goto-statement leading into a
+      conditional statement follows directly from the above
+      explanation of the execution of a conditional
+      statement.
+
+<p><b>Examples</b>
+<pre>
+         <b>if</b> x&gt;0 <b>then</b> n:=n+1
+
+         <b>if</b> <b>false</b> <b>then</b> abort: terminate_program
+         <b>else</b> <b>if</b> s&lt;0 <b>or</b> p&lt;q  <b>then</b>
+         <b>else</b> <b>if</b> v&gt;s <b>then</b> a := v-q
+         <b>else</b> <b>if</b> v&lt;s-1 <b>then</b> <b>goto</b> abort
+</pre>
+<h2>While-statement</h2>
+<pre>
+    while-statement
+        =  <b>while</b>  Boolean-expression  <b>do</b>  statement
+</pre>
+<p>A while-statement causes a statement to be executed zero or
+more times.
+
+<p>The evaluation of "<b>while</b> BE <b>do</b> S" is equivalent to
+<pre>
+     ALFA: <b>if</b>  BE  <b>then</b> <b>begin</b>  S;  <b>goto</b> ALFA  <b>end</b>
+</pre>
+<h2>For-statement</h2>
+<pre>
+    for-statement
+        =  for-clause  statement
+
+    for-clause
+        =  <b>for</b>  simple-variable  for-right-part  <b>do</b>
+
+    simple-variable
+        =  identifier
+
+    for-right-part
+        =  := value-for-list-element
+           { , value-for-list-element }
+        |  :- reference-for-list-element
+           { , reference-for-list-element }
+
+    value-for-list-element
+        =  value-expression  [ <b>while</b> Boolean-expression ]
+        |  text-expression
+        |  arithmetic-expression <b>step</b> arithmetic-expression
+           <b>until</b>  arithmetic-expression
+
+    reference-for-list-element
+        =  reference-expression
+           [ <b>while</b>  Boolean-expression ]
+</pre>
+<p>The simple variable of the for-clause is called "the
+controlled variable". The statement following is called
+"the controlled statement".
+
+<p>A for-clause causes the controlled statement to be executed
+repeatedly zero or more times. Each execution of the
+controlled statement is preceded by an assignment to the
+controlled variable and a test to determine whether this
+particular for list element is exhausted.
+
+<p>Assignments may change the value of the controlled variable
+during execution of the controlled statement. Upon exit
+from the for-statement, the controlled variable has the
+value given to it by the last (explicit or implicit)
+assignment operation.
+<h3>For list elements</h3>
+
+<p>The for list elements are considered in the order in which
+they are written. When one for list element is exhausted,
+control proceeds to the next, until the last for list
+element in the list has been exhausted. Execution then
+continues after the controlled statement.
+
+<p>The effect of each type of for list element is defined
+below using the following notation:
+<blockquote>
+<dl compact>
+ <dt>         C:</dt><dd>  controlled variable</dd>
+ <dt>         V:</dt><dd>  value expression</dd>
+ <dt>         R:</dt><dd>  reference expression</dd>
+ <dt>         A:</dt><dd>  arithmetic expression</dd>
+ <dt>         B:</dt><dd>  Boolean expression</dd>
+ <dt>         S:</dt><dd>  controlled statement</dd>
+</dl></blockquote>
+<p>The effect of the occurrence of expressions as for list
+elements may be established by textual replacement in the
+definitions. ALFA and DELTA are considered local to the
+fictitious block (4.4.3). DELTA is of the same type as A2.
+<pre>
+  1. V (value expression)     C := V;
+                              S;
+                              ... next for list element
+
+  2. A1 <b>step</b> A2 <b>until</b> A3      C     := A1;
+                              DELTA := A2;
+                              <b>while</b> DELTA*(C-A3) &lt;= 0
+                                 <b>do</b> <b>begin</b>
+                                    S;
+                                    DELTA := A2;
+                                    C     := C + DELTA;
+                              <b>end</b> while;
+                           ... next for list element
+
+  3. V <b>while</b> B         ALFA:  C:= V;
+                              <b>if</b> B <b>then</b> <b>begin</b>
+                                 S;
+                                 <b>goto</b> ALFA; <b>end</b>;
+                              ... next for list element
+
+  4. R (reference expression)    C :- R;
+                                 S;
+                                 ... next for list element
+
+  5. R <b>while</b> B         ALFA:  C :- R;
+                              <b>if</b> B <b>then</b> <b>begin</b>
+                                 S;
+                                 <b>goto</b> ALFA; <b>end</b>;
+                              ... next for list element
+</pre>
+<h3>The controlled variable</h3>
+
+<p>The controlled variable cannot be a formal parameter called
+by name, or a procedure identifier.
+
+<p>To be valid, all for list elements in a for-statement
+(defined by textual substitution, see 4.4.1) must be
+semantically and syntactically valid. In particular each
+implied reference assignment in cases 4 and 5 of 4.4.1 is
+subject to the rules of 4.1.4 and 4.1.3, and each text
+value assignment in cases 1 and 3 of 4.4.1 is subject to
+the rules of 4.1.2.
+
+<h3>The controlled statement</h3>
+
+<p>The controlled statement always acts as if it were a block,
+whether it takes this form or not. Hence, labels on or
+defined within the controlled statement are invisible
+outside that statement.
+
+<h2>Goto-statement</h2>
+<pre>
+    goto-statement
+        =  ( <b>goto</b> | <b>go</b> <b>to</b> )  designational-expression
+</pre>
+<p>A goto-statement interrupts the normal sequence of
+operations, by defining its successor explicitly by the
+value of a designational expression (i.e. a program point).
+Thus the next statement to be executed is the one at this
+program point.
+
+<p>The program point referenced by the designational
+expression must be visible at the goto-statement (cfr.
+5.6.2).
+
+<p>See also 7.3.5.
+
+<p><b>Examples</b>
+<pre>
+         <b>goto</b>  L8
+         <b>goto</b>  exit(n+1)
+         <b>go</b> <b>to</b> Town(<b>if</b> y&lt;0 <b>then</b> N <b>else</b> N+1)
+         <b>goto</b> <b>if</b> Ab&lt;c <b>then</b> L17
+                <b>else</b> q(<b>if</b> w&lt;0 <b>then</b> 2 <b>else</b> n)
+</pre>
+<h2>Procedure statement</h2>
+<pre>
+    procedure-statement
+        =  procedure-identifier-1 [ actual-parameter-part ]
+</pre>
+<p>A procedure statement interrupts the normal sequence of
+operations by invoking (calling for) the execution of a
+procedure body. Conceptually this may be described in the
+following terms.
+
+<p>If the procedure has parameters an additional block
+embracing the procedure body block (cf. 5.4) is created.
+All formal parameters correspond to variables declared in
+this (fictitious) block with types as given in the
+corresponding specifications. Thus formal parameters are
+non-local to the procedure body, but local to this block.
+The evaluation of the procedure statement now proceeds as
+described in 4.6.5.
+
+<h3>Actual-formal parameter correspondence</h3>
+
+<p>The correspondence between the actual parameters of the
+procedure statement and the formal parameters of the
+procedure heading is established as follows. The actual
+parameter list of the procedure statement must have the
+same number of entries as the formal parameter list of the
+procedure declaration heading. The correspondence is
+obtained by taking the entries of these two lists in the
+same order.
+
+<p>The type correspondence of formal and actual parameters is
+governed by the following rules:
+<ul>
+<li>exact type correspondence is required for parameters of
+   type <b>text</b>, <b>character</b> or <b>Boolean</b> as well as for all <b>array</b>
+   parameters, irrespective of transmission mode
+
+<li>an actual parameter corresponding to a formal parameter
+   of arithmetic type which is not an array or procedure can
+   have any arithmetic type. The conversion follows the
+   assignment statement rules for parameters called by value
+   and by reference and 5.4.3 for parameters called by name
+
+<li>a type procedure can correspond to a formal parameter
+   specified as a proper procedure
+
+<li>the type of an actual parameter corresponding to a formal
+   parameter of object reference type must coincide with or
+   be surordinate to the formal type (see 2.4.2).
+</ul>
+<h3>Value parameter replacement (call by value)</h3>
+
+<p>A formal parameter called by value designates initially a
+local copy of the value (or array) obtained by evaluating
+the corresponding actual parameter.
+
+<p>All formal parameters quoted in the value part of the
+procedure heading as well as value type parameters not
+quoted in the name part are assigned the values of the
+corresponding actual parameters, these assignments being
+considered as performed explicitly before entering the
+procedure body. The effect is as though an additional block
+embracing the procedure body were created in which these
+assignments were made to variables local to this fictitious
+block with types as given in the corresponding
+specifications (cf. 4.6.5). As a consequence, variables
+called by value are to be considered as non-local to the
+body of the procedure, but local to the fictitious block.
+
+<p><b>Note</b>: Parameters transmitted by value are evaluated once
+      only, before entry of the procedure body.
+
+<p>A text parameter called by value is a local variable
+initialised by the statement  "FP :- copy(AP)"  where FP is
+the formal parameter, and AP is the variable identified by
+evaluating the actual parameter. (:- is defined in 4.1.3,
+and "copy" in 8.3).
+
+<p>Value specification is redundant for a parameter of value
+type.
+
+<p>There is no call by value option for object reference type
+parameters and reference type array parameters.
+
+<h3>Default parameter replacement (call by reference)</h3>
+
+<p>Any formal parameter which is not of value type and which
+is not quoted in the mode part is said to be called by
+reference.
+
+<p>A formal parameter called by reference is initially
+assigned a local copy of the reference obtained by
+evaluating the corresponding actual parameter. Such
+assignments are entirely analogous to those described under
+call by value.
+
+<p><b>Note</b>: Parameters transmitted by reference are evaluated
+      once before entry of the procedure body.
+
+<p>A reference type formal parameter is a local variable
+initialised by a reference assignment  "FP:- AP"  where FP
+is the formal parameter and AP is the reference obtained by
+evaluating the actual parameter. The reference assignment
+is subject to the rules of 4.1.3 and 4.1.4. Since in this
+case the formal parameter is a reference type variable, its
+contents may be changed by reference assignments within the
+procedure body.
+
+<p>Although array, procedure, label and switch identifiers do
+not designate references to values, there is a strong
+analogy between references in the strict sense and
+references to entities such as arrays, procedures (i.e.
+procedure declarations), program points and switches.
+Therefore a call by reference mechanism is defined in these
+cases.
+
+<p>An array, procedure, label or switch parameter called by
+reference cannot be changed from within the procedure or
+class body. It thus references the same entity throughout
+its scope. However, the contents of an array called by
+reference may well be changed through appropriate
+assignments to its elements.
+
+<p>For a procedure parameter called by reference, the type
+associated with the actual parameter must coincide with or
+be subordinate to that of the formal specification.
+
+<h3>Name parameter replacement (call by name)</h3>
+
+<p>Call by name is an optional transmission mode available
+only for parameters to procedures.
+
+<p>Each occurrence of a formal parameter called by name within
+the procedure body invokes an evaluation of the actual
+parameter. This evaluation takes place in the context of
+the procedure statement, i.e. no identifier conflicts can
+occur (since the procedure body and its variables are
+invisible).
+
+<p>If the actual and formal parameters are of different
+arithmetic types, then the appropriate type conversion must
+take place, irrespective of the context of use of the
+parameter.
+
+<p>For an expression within a procedure body which is
+<ol>
+<li>a formal parameter called by name,
+
+<li>a subscripted variable whose array identifier is a
+    formal parameter called by name, or
+
+<li>a function designator whose procedure identifier is
+    a formal parameter called by name,
+</ol>
+<p>the following rules apply:
+<ol>
+<li>Its type is that prescribed by the corresponding formal
+    specification.
+
+<li>If the type of the actual parameter does not coincide
+    with that of the formal specification, then an
+    evaluation of the expression is followed by an
+    assignment of the value or reference obtained to a
+    fictitious variable of the latter type. This assignment
+    is subject to the rules of 4.1. The value or reference
+    obtained by the evaluation is the contents of the
+    fictitious variable.
+</ol>
+<p>Also, for a formal text parameter called by name, the
+following rule applies:
+<ul>
+<li>If the actual parameter is constant (i.e. CONST is
+    _true_), then all occurrences of the formal parameter
+    evaluate to the same text frame (see 3.7).
+</ul>
+<p>Section 4.1 defines the meaning of an assignment to a
+variable which is a formal parameter called by name, or is
+a subscripted variable whose array identifier is a formal
+parameter called by name, if the type of the actual
+parameter does not coincide with that of the formal
+specification.
+
+<p>Assignment to a procedure identifier which is a formal
+parameter is illegal, regardless of its transmission mode.
+
+<p><b>Note</b>: Each dynamic occurrence of a formal parameter called
+      by name, regardless of its kind, may invoke the
+      execution of a non-trivial expression, e.g. if its
+      actual parameter is a remote identifier, since the
+      actual parameter is evaluated at each occurrence.
+
+<h3>Body execution</h3>
+
+<p>The execution of a procedure call proceeds in the following
+steps, where 1 and 2 are performed only if the procedure
+has parameters.
+<ol>
+<li>The formal parameter block instance is created.
+
+<li>Actual parameters corresponding to call by value or call
+    by reference are evaluated as described above and the
+    results are assigned to the corresponding variables of
+    the formal block instance, following the rules in 4.1.
+    Actual parameters corresponding to call by name are
+    treated as described in 4.6.4.
+
+<li>The procedure body is instantiated and starts executing.
+</ol>
+<p>The execution of the final statement of the procedure body,
+unless this statement is itself a goto-statement, concludes
+with the execution of an implicit goto-statement to the
+program point immediately following the procedure
+statement.
+
+<h3>Restrictions</h3>
+
+<p>For a procedure statement to be defined it is evidently
+necessary that the operations on the procedure body defined
+in section 4.6.5 lead to a correct statement. This imposes
+the restriction on any procedure statement that the kind
+and type of each actual parameter be compatible with the
+kind and type of the corresponding formal parameter. The
+following are some important particular cases of this
+general rule, and some additional restrictions.
+
+<p>A formal parameter which occurs as a destination within the
+procedure body and which is called by name can only
+correspond to an actual parameter which is an
+identification of a variable (special case of expression).
+
+<p>A formal parameter which is used within the procedure body
+as an array identifier can only correspond to an actual
+parameter which identifies an array of the same number of
+dimensions. In addition if the formal parameter is called
+by value the local array created during the call has the
+same subscript bounds as the actual array. Similarly the
+number, kind and type of any parameters of a formal
+procedure parameter must be compatible with those of the
+actual parameter.
+
+<p><b>Note</b>: The rules stated above are applicable only where
+      formal arrays or procedure calls are actually
+      evaluated during the execution of the procedure body.
+
+<h2>Object generator statement</h2>
+
+<p>An object generator invokes the generation and execution of
+an object belonging to the identified class. The object is
+a new instance of the corresponding (concatenated) class
+body. The evaluation of an object generator consists of the
+following actions:
+<ol>
+<li>The object is generated and the actual parameters, if
+    any, of the object generator are evaluated. The
+    parameter values and/or references are transmitted.
+
+<li>Control enters the object through its initial <b>begin</b>
+    whereby it becomes operating in the "attached" state
+    (see chapter 7). The evaluation of the object generator
+    is completed:
+<dl>
+<dt>case a:</dt><dd>whenever the basic attribute procedure "detach"
+            of the generated object is executed (see 7.1),
+            or</dd>
+
+<dt>case b:</dt><dd>upon exit through the final <b>end</b> of the object .</dd>
+</dl>
+</ol>
+<p>The state of the object after the evaluation is either
+"detached" (a) or "terminated" (b). Cf. chapter 7.
+
+<h3>Parameter replacement</h3>
+
+<p>In general the correspondence between actual and formal
+parameters is the same for classes as for procedures.
+
+<p>The call by name option is not available for classes.
+Procedure, label and switch parameters cannot be
+transferred to classes.
+
+<p>For further information on the parameter transmission
+modes, see 5.5.5.
+<h2>Connection statement</h2>
+<pre>
+    connection-statement
+        =  <b>inspect</b> object-expression
+           when-clause { when-clause } [ otherwise-clause ]
+        |  <b>inspect</b> object-expression
+           <b>do</b> connection-block-2 [ otherwise-clause ]
+
+    when-clause
+        =  <b>when</b> class-identifier <b>do</b> connection-block-1
+
+    otherwise-clause
+        =  <b>otherwise</b>  statement
+
+    connection-block-1
+        =  statement
+
+    connection-block-2
+        =  statement
+</pre>
+<p>A connection block may itself be or contain a connection
+statement. This "inner" connection statement is then the
+largest possible connection statement. Consider the
+following:
+<pre>
+    <b>inspect</b> A <b>when</b> A1 <b>do</b>
+          <b>inspect</b> B <b>when</b> B1 <b>do</b> S1           *
+                    <b>when</b> B2 <b>do</b> S2           *
+                    <b>otherwise</b> S3;           *
+</pre>
+<p>The inner connection statement includes the lines that are
+marked with an asterisk.
+
+<p>The purpose of the connection mechanism is to provide
+implicit definitions to items 1 and 2 in 5.5.6 for certain
+attribute identifications within connection blocks.
+
+<p>The execution of a connection statement may be described as
+follows:
+<ol>
+<li>The object expression of the connection statement is
+   evaluated. Let its value be X.
+
+<li>If when-clauses are present they are considered from left
+   to right. If X is an object belonging to a class equal or
+   inner to the one identified by a when-clause, the
+   connection-block-1 of this when-clause is executed, and
+   subsequent when-clauses are skipped. Otherwise, the
+   when-clause is skipped.
+
+<li>If a connection-block-2 is present it is executed, unless
+   X is <b>none</b> in which case the connection block is skipped.
+
+<li>The statement of an otherwise-clause is executed if X is
+   <b>none</b>, or if X is an object not belonging to a class inner
+   to the one identified by any when-clause. Otherwise it is
+   skipped.
+</ol>
+<p>A statement which is a connection-block-1 or a connection-
+block-2 acts as a block, whether it takes the form of a
+block or not. It further acts as if enclosed by a second
+fictitious block, called a "connection block". During the
+execution of a connection block the object X is said to be
+"connected". A connection block has an associated "block
+qualification", which is the preceding class identifier for
+a connection-block-1 and the qualification of the preceding
+object expression for a connection-block-2.
+
+<p>Let the block qualification of a given connection block be
+C and let A be an attribute identifier, which is not a
+label or switch identifier, defined at any prefix level of
+C. Then any uncommitted occurrence of A within the
+connection block is given the local significance of being
+an attribute identification. Its item 1 is the connected
+object, its item 2 is the block qualification C. It follows
+that a connection block acts as if its local quantities are
+those attributes (excluding labels and switches) of the
+connected object which are defined at prefix levels outer
+to and including that of C. (Name conflicts between
+attributes defined at different prefix levels of C are
+resolved by selecting the one defined at the innermost
+prefix level.)
+
+<p><b>Example</b>
+
+<p>Let "Polar" be the class declared in the example of 5.5.2.
+Then within the connection-block-2 of the connection
+statement
+<pre>
+    <b>inspect</b> <b>new</b> Polar(4,5) <b>do</b> <b>begin</b> ... <b>end</b>
+</pre>
+<p>a procedure "plus" is available for vector addition.
+
+<h2>Compound statement</h2>
+<pre>
+    compound-statement
+        =  <b>begin</b>  compound-tail
+
+    compound-tail
+        =  statement  { ; statement }  <b>end</b>
+</pre>
+<p>This syntax may be illustrated as follows: Denoting
+arbitrary statements and labels, by the letters S and L,
+respectively, the syntactic unit takes the form:
+<pre>
+       L: L: ... <b>begin</b>  S; S; ... S; S <b>end</b>
+</pre>
+<p><b>Note</b>: Each of the statements S may be a complete compound
+      statement or block.
+
+<p><b>Example</b>
+<pre>
+     <b>begin</b> x:=0;
+         <b>for</b> y:=1 <b>step</b> 1 <b>until</b> n <b>do</b> x := x + a(y);
+         <b>if</b> x&gt;q <b>then</b> <b>goto</b> stop
+         <b>else</b> <b>if</b> x&gt;w-2 <b>then</b> <b>goto</b> s;
+ aw: st: w:=x+bob
+     <b>end</b>
+</pre>
+<h2>Blocks</h2>
+<pre>
+    block
+        =  subblock
+        |  prefixed-block
+
+    subblock
+        =  block-head  ;  compound-tail
+
+    block-head
+        =  <b>begin</b>  declaration  { ; declaration }
+</pre>
+<p>This syntax may be illustrated as follows: Denoting
+arbitrary statements, declarations, and labels, by the
+letters S, D, and L, respectively, the syntactic unit takes
+the form:
+<pre>
+    L: L: ... <b>begin</b> D; D; ... D; S; S; ... S; S <b>end</b>
+</pre>
+<p><b>Note</b>: Each of the statements S may be a complete compound
+      statement or block.
+
+<p>Every block automatically introduces a new level of
+nomenclature. This is realised as follows. Any identifier
+occurring within the block may through a suitable
+declaration be specified to be local to the block in
+question. This means that
+<ol type="a">
+<li>the entity represented by this identifier inside the
+    block has no existence outside it, and
+
+<li>any entity represented by this identifier outside the
+    block is invisible inside the block, unless made visible
+    by connection or remote access.
+</ol>
+<p>Identifiers (except those representing labels) occurring
+within a block and not being declared to this block will be
+non-local to it, i.e. will represent the same entity inside
+the block and in the level immediately outside it. A label
+separated by a colon from a statement, i.e. labelling that
+statement, behaves as though declared in the head of the
+smallest embracing block.
+
+<p>A label is said to be implicitly declared in this block
+head. In this context, a procedure body, the statement
+following a for-clause, or a connection block must be
+considered as if it were enclosed by <b>begin</b> and <b>end</b> and
+treated as a block, this block being nested within the
+fictitious block of 4.6.1 in the case of a procedure with
+parameters. A label that is not within any block of the
+program (nor within a procedure body, the statement
+following a for-clause, or a connection block) is
+implicitly declared in the implied connection block
+embracing the program.
+
+<p><b>Note</b>: System-defined class identifiers used as prefixes
+      within the block as well as identifiers introduced as
+      part of an external head are in this respect treated
+      in the same manner as labels.
+
+<p>Since a statement of a block may itself be a block the
+concepts local and non-local to a block must be understood
+recursively. Thus an identifier which is non-local to a
+block A may or may not be non-local to the block B in which
+A is a statement. See also 5.6.
+
+<p><b>Example</b>
+<pre>
+   Q:  <b>begin</b> integer i, k; real w;
+          <b>for</b> i:=1 <b>step</b> -1 <b>until</b> m <b>do</b>
+             <b>for</b> k:=i+1 <b>step</b> 1 <b>until</b> m <b>do</b> <b>begin</b>
+                w      := A(i,k);
+                A(i,k) := A(k,i);
+                A(k,i) := w
+             <b>end</b> for i and k
+       <b>end</b>  block Q
+</pre>
+<h3>Prefixed blocks</h3>
+<pre>
+    prefixed-block
+        =  block-prefix  main-block
+
+    block-prefix
+        =  class-identifier  [ actual-parameter-part ]
+
+    main-block
+        =  block
+        |  compound-statement
+</pre>
+<p>An instance of a prefixed block is a compound object whose
+prefix part is an object of the class identified by the
+block prefix, and whose main part is an instance of the
+main block. The formal parameters of the former are
+initialised as indicated by the actual parameters of the
+block prefix. The concatenation is defined by rules similar
+to those of 5.5.2.
+
+<p>The following restrictions must be observed:
+<ol>
+<li>A class in which reference is made to the class itself
+    through use of <b>this</b> is an illegal block prefix.
+
+<li>The class identifier of a block prefix must refer to a
+    class local to the smallest block enclosing the prefixed
+    block (for system-defined class identifiers, see (2) of
+    5.5.1).
+</ol>
+<p>A program is enclosed by a prefixed block (cf. chapter 10).
+
+<p><b>Example</b>
+
+<p>Let "hashing" be the class declared in the example of
+5.5.3. Then within the prefixed block
+<pre>
+  hashing(64) <b>begin</b>
+       <b>integer</b> <b>procedure</b> hash(T); <b>text</b> T;
+        ... ;
+        ...
+  <b>end</b>
+</pre>
+<p>a "lookup" procedure is available which makes use of the
+"hash" procedure declared within the main block.
+
+<h2>Dummy statement</h2>
+<pre>
+    dummy-statement
+        =  empty
+</pre>
+A dummy statement executes no operation. It may serve to
+place a label.
+<pre>
+</pre>
+<p><b>Example</b>
+
+        L: <b>begin</b> statements; John: <b>end</b>
+</pre>
+</body>
+</html>

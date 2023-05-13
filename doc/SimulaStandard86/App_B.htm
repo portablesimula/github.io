@@ -1,0 +1,186 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="../includes/standard.css">
+<title>Appendix B: Implementation Aspects</title>
+</head>
+<body>
+<h1>APPENDIX B<br>
+Implementation Aspects</h1>
+
+ <p>According to Part I (section 5.1.3) of the Standard, an implementation of the
+ language must document all implementation-dependent and -defined issues. This
+ appendix summarises all characteristics of the language which in some manner
+ depend upon the particular implementation of the language. It may thus be used
+ as a checklist to be filled out for any given implementation.
+
+ <p>It can also be a useful guide when preparing programs that potentially may be
+ transferred to other manufacturers equipment. Keeping these points in mind
+ when preparing a program may spare a programmer many a painful hour of
+ debugging a program that behaves abnormally on some other host computer,
+ while executing perfectly correct on his own system (or vice versa).
+
+ <h2>B.1  LANGUAGE EXTENSIONS</h2>
+
+ <p>Extensions are allowed only if the following conditions are fulfilled:
+<ol type="a">
+     <li>The implementor provides a translator program, which takes any
+         program accepted by that implementation and translates it into a
+         valid program. The resulting program may contain a minimum of
+         calls to non-SIMULA procedures in cases where this is absolutely
+         necessary due to a lack of facilities in the language.
+
+       <li>Each implementation has a switch which must be set to make the
+         compiler accept programs with extensions.<br>
+
+         An implementation which allows extensions, shall give warning
+         messages for the use of such extensions.
+
+       <li>All such extensions should be reported to the SIMULA Standards
+         Group, which will send such reports to the SSG members for
+         comments. Responses from SSG members will be sent to the
+         originator through the SSG.
+</ol>
+ <p>Additional file access modes and access mode values to those defined in 10.1.1
+ may be defined by an implementation.
+
+ <p>An implementation may provide additional subclasses of <b>class</b> file.
+
+
+ <h2>B.2  ALLOWED IMPLEMENTATION RESTRICTIONS</h2>
+
+
+ <p>It is recognised that all language processing systems have some restrictions
+ due to e.g. limited capacity of the underlying hardware. Such restrictions
+ are not mentioned here.
+
+ <p>An implementation may restrict the value range of the ISO-code construct, and
+ the character set defined in table 1.1, as long as the "basic" characters of
+ the table are included.
+
+ <p>An implementation may restrict the number of different block levels at which a
+ system class may be used as a prefix.
+
+ <p>An implementation may restrict, in any way, the use of "file" and its
+ subclasses for prefixing or block prefixing.
+
+ <p>The type <b>short</b> <b>integer</b> is allowed to be unsupported by an implementation in the
+ sense that it must then be mapped unto <b>integer</b> (i.e. the key word <b>short</b> is
+ ignored).
+
+ <p>The type <b>long</b> <b>real</b> is allowed to be unsupported by an implementation in the
+ sense that it must then be mapped unto <b>real</b> (i.e. the key word <b>long</b> is ignored,
+ and the special symbol "&&" is treated as "&").
+
+ <p>An implementation may restrict the use of the standard access modes and their
+ possible standard values; in that case the procedure "setaccess" must treat
+ such values as unrecognised, and return <b>false</b>.
+
+ <p>An implementation may restrict the number of block levels at which an
+ external class declaration may occur.
+
+ <p>An implementation may restrict the possible values of access mode BYTESIZE in
+ any way.
+
+
+ <h2>B.3  IMPLEMENTATION DEPENDENT CHARACTERISTICS</h2>
+
+
+ <p>Whether or not the procedure "terminate_program" will close open external
+ files (except those associated with sysin and sysout), is
+ implementation-defined.
+
+ <p>The effect of a parameter to printfile.spacing with value zero, may be
+ device and implementation dependent, if the standard effect of "overprint"
+ cannot be achieved.
+
+ <p>The interpretation of directive lines (apart from the "% "-convention) is
+ implementation dependent.
+
+ <p>The interpretation of "kind" and of the external identification string in an
+ external procedure declaration is implementation dependent, as is the
+ identification of a separately compiled module if no external identification
+ is given.
+
+ <p>The size of the part of the file that is actually locked after a call to
+ procedure "lock", is implementation dependent.
+
+
+ <h2>B.4  IMPLEMENTATION DEFINED CHARACTERISTICS</h2>
+
+
+ <p>The internal character set is implementation defined. An implementation is
+ required to document the translation between the internal character set and
+ the standard character set (as defined by ISO 646).
+
+ <p><b>Note</b>: The collating sequence of character (and text) values is decided by
+       the internal character set. Thus the values of character and text
+       relations are implementation-defined.
+
+ <p>The values of "inlength" and "outlength" (see ch. 10) are implementation-
+ defined.
+
+ <p>The actual external files connected to SYSIN and SYSOUT are implementation-
+ defined.
+
+ <p>An implementation may define the actions to be taken when format effectors
+ are included in the program (see 1.9).
+
+ <p>The relative value range of <b>real</b> and <b>long</b> <b>real</b> is implementation-
+ defined.
+
+ <p>The ranges in which conversions from an integer type to a real type, or from
+ <b>real</b> to <b>long</b> <b>real</b>, are exact, are implementation-defined.
+
+ <p>The range of a numeric item in a de-editing procedure is implementation
+ defined.
+
+ <p>If the REAL ITEM located by text procedure "getreal" is an integer within an
+ implementation defined range, the conversion is exact.
+
+ <p>The EXPONENT of the numeric item resulting from "putreal" has a fixed,
+ implementation-defined number of characters.
+
+ <p>The function values of "char" and "rank" are implementation-defined.
+
+ <p>The exact definitions of the standard mathematical functions are
+ implementation-defined.
+
+ <p>The values of the environmental enquiries are implementation-defined.
+
+ <p>The association between a file object and an external file is implementation
+ defined.
+
+ <p>The effect of several file objects representing the same (external) file
+ is implementation defined.
+
+ <p>The details of procedures "open" and "close" are implementation-defined.
+
+ <p>The interpretation of a function value of "lock" less than -1 is
+ implementation-defined.
+
+ <p>Directfile.outimage reacts in an implementation-defined way if the length of
+ the internal image is incompatible with the format of the external file.
+
+ <p>Directfile.locate may invoke implementation defined checks and possibly
+ instructions to an external memory device.
+
+ <p>Printfile.LINES_PER_PAGE: the value at object generation and after
+ close is implementation defined.
+
+ <p>The "basic drawing" algorithm is implementation defined.
+
+ <p>The effect of the conditions demanded for the parameters to "linear" not
+ being fulfilled, is implementation defined.
+
+ <p>The number of decimals in the field for seconds of the function "datetime" is
+ implementation-defined.
+
+ <p>The effect of the parameters to "histo" not fulfilling the condition:
+ length of A = length of B +1, is implementation defined.
+
+ <p>The default BYTESIZE for bytefiles is implementation defined.
+
+ <p>Evaluation of arithmetic expressions may give different results for
+ different implementations.
+</body>
+</html>

@@ -1,0 +1,448 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="../includes/standard.css">
+<title>Chapter 8: Attributes of text</title>
+</head>
+<body>
+<h1>Chapter 8<br>
+ATTRIBUTES OF TEXT</h1>
+ <p>A text object is conceptually an instance of
+<pre>
+         <b>class</b> TEXTOBJ( SIZE, CONST); <b>integer</b> SIZE; <b>boolean</b> CONST;
+         <b>begin</b> <b>character</b> <b>array</b> MAIN( 1:SIZE ); <b>end</b>;
+</pre>
+ <p>Any <b>text</b> value processed by the program is contained within a text frame,
+ i.e. a non-empty segment of the MAIN attribute of some TEXTOBJ instance, or it
+ is empty (i.e. <b>notext</b>). See 2.5.
+
+ <p>A text variable is conceptually an instance of a composite structure
+<pre>
+         <b>ref</b>(TEXTOBJ)  OBJ;  <b>integer</b> START, LENGTH, POS;
+</pre>
+ <p>It references (and has as its value the contents of) some text frame defined by
+ the three first components. POS identifies the current character. See 3.1.2.
+
+ <p>See also 3.3.3 and 3.3.6 (text relations), 3.7 (text expressions), 4.1.2 and
+ 4.1.3 (text assignments).
+
+ <p>This chapter defines all procedure attributes of any text variable. They may be
+ accessed by remote identifiers of the form
+<pre>
+         simple-text-expression . procedure-identifier
+</pre>
+ <p>The attributes are
+<pre>
+         <b>boolean</b> <b>procedure</b> constant; ........................ 8.1;
+         <b>integer</b> <b>procedure</b> start; ........................... 8.1;
+         <b>integer</b> <b>procedure</b> length; .......................... 8.1;
+         <b>text</b> <b>procedure</b> main; ............................... 8.1;
+         <b>integer</b> <b>procedure</b> pos; ............................. 8.2;
+         <b>procedure</b> setpos(i); <b>integer</b> i; .................... 8.2;
+         <b>boolean</b> <b>procedure</b> more; ............................ 8.2;
+         <b>character</b> <b>procedure</b> getchar; ....................... 8.2;
+         <b>procedure</b> putchar(c); <b>character</b> c; ................. 8.2;
+         <b>text</b> <b>procedure</b> sub(i,n); <b>integer</b> i,n; .............. 8.4;
+         <b>text</b> <b>procedure</b> strip; .............................. 8.4;
+         <b>integer</b> <b>procedure</b> getint; .......................... 8.6;
+         <b>long</b> <b>real</b> <b>procedure</b> getreal; ....................... 8.6;
+         <b>integer</b> <b>procedure</b> getfrac; ......................... 8.6;
+         <b>procedure</b> putint(i); <b>integer</b> i; .................... 8.7;
+         <b>procedure</b> putfix(i,n); <b>integer</b> i,n; ................ 8.7;
+         <b>procedure</b> putreal(r,n); <b>long</b> <b>real</b> r; <b>integer</b> n; .... 8.7;
+         <b>procedure</b> putfrac(i,n); <b>integer</b> i,n; ............... 8.7;
+</pre>
+ <p>In the following "X" denotes a text variable unless otherwise specified.
+
+<h2>"constant", "start", "length" and "main"</h2>
+<pre>
+ CONSTANT   <b>boolean</b> <b>procedure</b> constant;
+            constant:= OBJ == <b>none</b>  <b>or</b> <b>else</b>  OBJ.CONST;
+
+
+ START      <b>integer</b> <b>procedure</b> start;   start  := START;
+
+
+ LENGTH     <b>integer</b> <b>procedure</b> length;  length := LENGTH;
+
+
+ MAIN       <b>text</b> <b>procedure</b> main;
+            <b>if</b> OBJ =/= <b>none</b> <b>then</b>
+            <b>begin</b> <b>text</b> T;
+               T.OBJ    :- OBJ;
+               T.START  := 1;
+               T.LENGTH := OBJ.SIZE;
+               T.POS    := 1;
+               main     :- T;
+            <b>end</b> main;
+
+            &quot;X.main&quot; is a reference to the main frame which contains the
+            frame referenced by X.
+</pre>
+            The following relations are true for any text variable X:
+<pre>
+                      X.main.length  &gt;=  X.length
+                      X.main.main    ==  X.main
+</pre>
+            In addition,
+<pre>
+                     <b>notext</b>.main    ==  <b>notext</b>
+                     &quot;ABC&quot;.main     =   &quot;ABC&quot;      (but &quot;ABC&quot;.main =/= &quot;ABC&quot;)
+</pre>
+ <p><b>Examples</b>
+<pre>
+     <b>boolean</b> <b>procedure</b> overlapping(X,Y);  <b>text</b> X,Y;
+     overlapping := X.main == Y.main  <b>and</b> <b>then</b>
+                    (<b>if</b>    X.start &lt;= Y.start
+                     <b>then</b>  X.start + X.length &gt; Y.start
+                     <b>else</b>  Y.start + Y.length &gt; X.start);
+</pre>
+ <p>"overlapping(X,Y)" is true if and only if X and Y reference text frames
+ which overlap each other.
+<pre>
+     <b>boolean</b> <b>procedure</b> subtext(X,Y);  <b>text</b> X,Y;
+     subtext := X.main == Y.main
+                <b>and</b> <b>then</b>  X.start &gt;= Y.start
+                <b>and</b> <b>then</b>  X.start + X.length &lt;= Y.start + Y.length;
+</pre>
+ <p>"subtext(X,Y)" is true if and only if X references a subframe of Y, or
+ if both reference <b>notext</b>.
+<h2>Character access</h2>
+
+ <p>The characters of a text are accessible one at a time. Any text variable
+ contains a "position indicator" POS, which identifies the currently accessible
+ character, if any, of the referenced text frame. The position indicator of a
+ given text variable X is an integer in the range (1,X.length+1).
+
+ <p>The position indicator of a given text variable may be altered by the
+ procedures "setpos", "getchar", and "putchar" of the text variable. Also any of
+ the procedures defined in 8.6 and 8.7 may alter the position indicator of the
+ text variable of which the procedure is an attribute.
+
+ <p>Position indicators are ignored and left unaltered by text reference relations,
+ text value relations and text value assignments.
+
+ <p>The following procedures are facilities available for character accessing. They
+ are oriented towards sequential access.
+
+ <p><b>Note</b>: The implicit modification of POS is lost immediately if "setpos",
+       "getchar" or "putchar" is successfully applied to a text expression
+       which is not a variable (see 3.7).
+
+<pre>
+ POS        <b>integer</b> <b>procedure</b> pos;  pos := POS;
+
+
+ SETPOS     <b>procedure</b> setpos(i); <b>integer</b> i;
+            POS := <b>if</b> i &lt; 1 <b>or</b> i &gt; LENGTH + 1 <b>then</b> LENGTH + 1 <b>else</b> i;
+
+
+ MORE       <b>boolean</b> <b>procedure</b> more;  more := POS &lt;= LENGTH;
+
+
+ GETCHAR    <b>character</b> <b>procedure</b> getchar;
+            <b>if</b> POS &gt; LENGTH <b>then</b> error(&quot;...&quot; ! Pos out of range;)
+            <b>else</b> <b>begin</b>
+               getchar:= OBJ.MAIN(START + POS - 1);  POS:= POS + 1
+            <b>end</b> getchar;
+
+
+ PUTCHAR    <b>procedure</b> putchar(c); <b>character</b> c;
+            <b>if</b>  OBJ == <b>none</b> <b>or</b> <b>else</b> OBJ.CONST <b>or</b> <b>else</b> POS&gt;LENGTH
+            <b>then</b> error(&quot;...&quot;)
+            <b>else</b> <b>begin</b>
+               OBJ.MAIN(START + POS - 1):= c;  POS:= POS + 1
+            <b>end</b> putchar;
+</pre>
+<h2>Text generation</h2>
+
+ <p>The following standard procedures are available for text frame generation:
+
+<pre>
+ BLANKS    <b>text</b> <b>procedure</b> blanks(n); <b>integer</b> n;
+           <b>if</b>        n &lt; 0 <b>then</b> error(&quot;...&quot; ! Parm. to blanks &lt; 0;)
+           <b>else</b> <b>if</b>   n &gt; 0
+           <b>then</b> <b>begin</b> <b>text</b> T;
+              T.OBJ    :- <b>new</b> TEXTOBJ(n,<b>false</b>);
+              T.START  := 1;
+              T.LENGTH := n;
+              T.POS    := 1;
+              T        := <b>notext</b>;    ! blank-fill, see 4.1.2;
+              blanks   :- T
+           <b>end</b> blanks;
+
+           &quot;blanks(n)&quot;, with n &gt; 0, references a new alterable main frame of
+           length n, containing only blank characters. &quot;blanks(0)&quot;
+           references <b>notext</b>.
+
+
+ COPY      <b>text</b> <b>procedure</b> copy(T); <b>text</b> T;
+           <b>if</b> T =/= <b>notext</b>
+           <b>then</b> <b>begin</b> <b>text</b> U;
+              U.OBJ    :- <b>new</b> TEXTOBJ(T.LENGTH,<b>false</b>);
+              U.START  := 1;
+              U.LENGTH := T.LENGTH;
+              U.POS    := 1;
+              U        := T;
+              copy     :- U
+           <b>end</b> copy;
+
+           &quot;copy(T)&quot;, with T =/= <b>notext</b>, references a new alterable main
+           frame which contains a text value identical to that of T.
+</pre>
+
+ <p>Text frame generation is also performed by the text concatenation operator
+ (see 3.7.1) and by the standard procedure "datetime" (see 9.10).
+
+<h2>Subtexts</h2>
+
+ <p>Two procedures are available for referencing subtexts (subframes).
+
+<pre>
+ SUB       <b>text</b> <b>procedure</b> sub(i,n); <b>integer</b> i,n;
+           <b>if</b> i &lt; 0 <b>or</b> n &lt; 0 <b>or</b> i + n &gt; LENGTH + 1
+           <b>then</b> error(&quot;...&quot; ! Sub out of frame;)
+           <b>else</b> <b>if</b> n &gt; 0
+           <b>then</b> <b>begin</b> <b>text</b> T;
+              T.OBJ    :- OBJ;
+              T.START  := START + i - 1;
+              T.LENGTH := n;
+              T.POS    := 1;
+              sub      :- T
+           <b>end</b>;
+
+           If legal, &quot;X.sub(i,n)&quot; references that subframe of X whose first
+           character is character number i of X, and which contains n
+           consecutive characters. The POS attribute of the expression
+           defines a local numbering of the characters within the subframe.
+           If n = 0, the expression references <b>notext</b>.
+
+           If legal, the following Boolean expressions are true for any text
+           variable X:
+
+                X.sub(i,n).sub(j,m) == X.sub(i+j-1,m)
+
+                n &lt;&gt; 0  <b>imp</b>  X.main == X.sub(i,n).main
+
+                X.main.sub(X.start,X.length) == X
+
+
+ STRIP     <b>text</b> <b>procedure</b> strip; ... ;
+
+           The expression &quot;X.strip&quot; is equivalent to &quot;X.sub(1,n)&quot;, where n
+           indicates the position of the last non-blank character in X. If X
+           does not contain any non-blank character, <b>notext</b> is returned.
+
+           Let X and Y be text variables. Then after the value assignment
+           &quot;X:=Y&quot;, if legal, the relation &quot;X.strip = Y.strip&quot; has the value
+           <b>true</b>, while &quot;X = Y&quot; is <b>true</b> only if X.length = Y.length.
+</pre>
+<h2>Numeric text values</h2>
+
+ <p>The names of the syntactic units in this section are in upper case to indicate
+ that these rules concern syntax for data and not for program text.
+
+ <p>The syntax applies to sequences of characters, i.e. to text values.
+<pre>
+     NUMERIC-ITEM     =  REAL-ITEM  |  GROUPED-ITEM
+
+     REAL-ITEM        =  DECIMAL-ITEM  [ EXPONENT ]
+                      |  SIGN-PART  EXPONENT
+
+     GROUPED-ITEM     =  SIGN-PART  GROUPS  [ DECIMAL-MARK  GROUPS ]
+                      |  SIGN-PART  DECIMAL-MARK  GROUPS
+
+     DECIMAL-ITEM     =  INTEGER-ITEM  [ FRACTION ]
+                      |  SIGN-PART  FRACTION
+
+     INTEGER-ITEM     =  SIGN-PART  DIGITS
+
+     FRACTION         =  DECIMAL-MARK  DIGITS
+
+     SIGN-PART        =  BLANKS  [ SIGN ]  BLANKS
+
+     EXPONENT         =  LOWTEN-CHARACTER  INTEGER-ITEM
+
+     GROUPS           =  DIGITS  { BLANK  DIGITS }
+
+     SIGN             =  +  |  -
+
+     DIGITS           =  DIGIT  { DIGIT }
+
+     DIGIT            =  0  |  1  |  2  |  3  |  4
+                      |  5  |  6  |  7  |  8  |  9
+
+     LOWTEN-CHARACTER =  &amp;  |  ...
+
+     DECIMAL-MARK     =  .  |  ,
+
+     BLANKS           =  {  BLANK  |  TAB  }
+</pre>
+ <p>BLANK and TAB are the characters space and horisontal tabulation respectively.
+
+ <p>The default representations of LOWTEN CHARACTER and DECIMAL MARK are & and
+ ., respectively. These values may, however, be changed by appropriate
+ procedure calls, see 9.2.
+
+ <p>A numeric item is a character sequence which may be derived from NUMERIC ITEM.
+ "Editing" and "de-editing" procedures are available for the conversion between
+ arithmetic values and text values which are numeric items, and vice versa.
+
+ <p>The editing and de-editing procedures are oriented towards "fixed field" text
+ manipulation.
+
+ <p><b>Note</b>: Both the editing and the de-editing procedures are understood to
+       operate on text values represented in the internal character set.
+<h2>"De-editing" procedures</h2>
+
+ <p>A de-editing procedure of a given text variable X operates in the following
+ way:
+<ol>
+<li>The longest numeric item, if any, of a given form, which is
+          contained by X and which contains the first character of X is
+          located. (Note that leading blanks and tabs are accepted as
+          part of any numeric item.)
+
+<li>If no such numeric item is found, a run-time error occurs.
+
+<li>Otherwise, the numeric item is interpreted as a number.
+
+<li>If that number is outside a relevant implementation-defined range,
+          a run-time error occurs.
+
+<li>Otherwise, an arithmetic value is computed, which is equal to or
+          approximates to that number.
+
+<li>The position indicator of X is made one greater than the position
+          of the last character of the numeric item. Note that this
+          increment is lost immediately if X does not correspond to a
+          variable (see 3.7).
+</ol>
+ <p>The following de-editing procedures are available.
+
+<pre>
+ GETINT    <b>integer</b> <b>procedure</b> getint; ... ;
+
+           The procedure locates an INTEGER ITEM.  The function value is
+           equal to the corresponding integer.
+
+
+ GETREAL   <b>long</b> <b>real</b> <b>procedure</b> getreal; ... ;
+
+           The procedure locates a REAL ITEM.  The function value is equal
+           to or approximates to the corresponding number. An INTEGER ITEM
+           exceeding a certain implementation-defined range may lose
+           precision when converted to <b>long</b> <b>real</b>.
+
+     <b>Note</b>: No distinction is made between <b>real</b> and <b>long</b> <b>real</b> items.
+           In order to preserve precision the procedure assumes <b>long</b> <b>real</b>
+           precision.
+
+
+ GETFRAC   <b>integer</b> <b>procedure</b> getfrac; ... ;
+
+           The procedure locates a GROUPED ITEM.  The function value is
+           equal to the resulting integer. The digits of a GROUPED ITEM
+           may be interspersed with BLANKS and a single DECIMAL MARK which
+           are ignored by the procedure.
+</pre>
+     <b>Note</b>: "getfrac" is thus able to de-edit more general patterns than
+           those generated by "putfrac".
+<h2>Editing procedures</h2>
+
+ <p>Editing procedures of a given text variable X serve to convert arithmetic
+ values to numeric items. After an editing operation, the numeric item obtained,
+ if any, is right-adjusted in the text frame referenced by X and preceded by as
+ many blanks as necessary to fill the text frame. The final value of the
+ position indicator of X is X.length+1. Note that this increment is lost
+ immediately if X does not correspond to a variable, (see 3.7).
+
+ <p>A positive number is edited without a sign. A negative number is edited with a
+ minus sign immediately preceding the most significant character. Leading
+ non-significant zeros are suppressed, except possibly in an EXPONENT.
+
+ <p>If X references a constant text frame or <b>notext</b>, an error results. Otherwise,
+ if the text frame is too short to contain the resulting numeric item, the text
+ frame into which the number was to be edited is filled with asterisks. If the
+ parameters to "putfix" and "putreal" are such that some of the printed digits
+ will be without significance, zeros are substituted for these digits (and no
+ error condition is raised).
+
+ <p>In "putfix" and "putreal", the numeric item designates that number of the
+ specified form which differs by the smallest possible amount from the value of
+ "r" or from the approximation to the value of "r".
+
+<pre>
+ PUTINT    <b>procedure</b> putint(i); <b>integer</b> i; ... ;
+
+           The value of the parameter is converted to an INTEGER ITEM which
+           designates an integer equal to that value.
+
+ PUTFIX    <b>procedure</b> putfix(r,n); <real-type> r; <b>integer</b> n; ... ;
+
+           The resulting numeric item is an INTEGER ITEM if n=0 or a DECIMAL
+           ITEM with a FRACTION of n digits if n&gt;0. It designates a number
+           equal to the value of r or an approximation to the value of r,
+           correctly rounded to n decimal places. If n&lt;0, a run-time error
+           is caused.
+
+ PUTREAL   <b>procedure</b> putreal(r,n); <real-type> r; <b>integer</b> n; ... ;
+
+           The resulting numeric item is a REAL ITEM containing an EXPONENT
+           with a fixed implementation-defined number of characters. The
+           EXPONENT is preceded by a SIGN PART if n=0, or by an INTEGER ITEM
+           with one digit if n=1, or if n&gt;1, by a DECIMAL ITEM with an
+           INTEGER ITEM of 1 digit only, and a fraction of n-1 digits. If
+           n&lt;0 a runtime error is caused.
+
+ PUTFRAC   <b>procedure</b> putfrac(i,n); <b>integer</b> i,n; ... ;
+
+           The resulting numeric item is a GROUPED ITEM with no DECIMAL MARK
+           if n&lt;=0, and with a DECIMAL MARK followed by total of n digits if
+           n&gt;0. Each digit group consists of 3 digits, except possibly the
+           first one, and possibly the last one following a DECIMAL MARK. The
+           numeric item is an exact representation of the number i * 10**(-n).
+</pre>
+
+ <p><b>Examples</b>
+<pre>
+               <b>procedure</b> compact(T); <b>text</b> T;
+               <b>begin</b> <b>text</b> U; <b>character</b> c;
+                     T.setpos(1);  U:- T;
+                     <b>while</b> U.more <b>do</b> <b>begin</b>
+                        c:=U.getchar; <b>if</b> c &lt;&gt; ' ' <b>then</b> T.putchar(c)
+                     <b>end</b>;
+                     <b>while</b> T.more <b>do</b> T.putchar(' ')
+               <b>end</b> compact;
+</pre>
+ <p>The procedure rearranges the characters of the text frame referenced by its
+ parameter. The non-blank characters are collected in the leftmost part of the
+ text frame and the remainder, if any, is filled with blank characters. Since
+ the parameter is called by reference, its position indicator is not altered.
+
+<pre>
+            <b>begin</b>
+               <b>text</b> tr, type, amount, price, payment;
+               <b>integer</b> pay, total;
+               tr      :- blanks(80);
+               type    :- tr.sub(1,5);
+               amount  :- tr.sub(20,5);
+               price   :- tr.sub(30,6);
+               payment :- tr.sub(40,10);
+               ... ; ! ***;
+               <b>if</b> type = &quot;order&quot; <b>then</b> <b>begin</b>
+                  pay   := amount.getint * price.getfrac;
+                  total := total + pay;
+                  payment.putfrac(pay,2)
+               <b>end</b>
+            <b>end</b>
+</pre>
+       If tr at *** holds the text
+<pre>
+               &quot;order                1200    155.75               ...&quot;
+</pre>
+       it will after editing contain
+<pre>
+               &quot;order                1200    155.75     18 690.00 ...&quot;.
+</pre>
+</body>
+</html>
