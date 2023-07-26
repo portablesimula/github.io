@@ -1,9 +1,3 @@
-org.objectweb.asm
-org.objectweb.asm.commons
-org.objectweb.asm.signature
-org.objectweb.asm.tree
-org.objectweb.asm.tree.analysis
-org.objectweb.asm.util
 simula
 simula.compiler
 simula.compiler.byteCodeEngineering
