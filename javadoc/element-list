@@ -2,9 +2,9 @@ simula
 simula.compiler
 simula.compiler.byteCodeEngineering
 simula.compiler.declaration
-simula.compiler.editor
 simula.compiler.expression
 simula.compiler.parsing
 simula.compiler.statement
 simula.compiler.utilities
+simula.editor
 simula.runtime
