@@ -2,10 +2,11 @@ module:Simula
 simula
 simula.compiler
 simula.compiler.byteCodeEngineering
-simula.compiler.declaration
-simula.compiler.expression
 simula.compiler.parsing
-simula.compiler.statement
+simula.compiler.syntaxClass
+simula.compiler.syntaxClass.declaration
+simula.compiler.syntaxClass.expression
+simula.compiler.syntaxClass.statement
 simula.compiler.utilities
 simula.editor
 simula.runtime
