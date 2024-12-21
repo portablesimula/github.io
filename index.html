@@ -11,10 +11,22 @@
 <br>   The project was initiated as a response to the lecture held by <a href="https://vimeo.com/237788383">James Gosling</a> at the 50th
 <br>   anniversary of Simula in Oslo on 27th September, 2017.
 <br>
-<br>   This Simula System is written in Java and compiles to pure Java code with one exception;
-<br>   the Goto Statement need to be corrected in the byte code, which is done automatically.
-<br>   The <a href="https://asm.ow2.io/">ASM</a> Java bytecode manipulation and analysis framework is used for this purpose.
+<br>   This Simula System is written in pure Java without use of any external API and compiles
+<br>   directly to Java Class Files without use of any intermediate files. This has become
+<br>   possible because the JDK 24 introduces the <a href="https://openjdk.org/jeps/484">Java Class File API</a> as a standard part.
+<br>
+<br>   However, it is still possible to compile via Java Source, in which case the Goto Statement
+<br>   need to be corrected in the byte code. This correction is done automatically using a
+<br>   transformer based on the Java Class File API.
 <br>   See: <a href="doc/SimulaRTS.pdf">Mapping Simula to Java (runtime design)</a> section 6.1.2 Byte Code Engineering. 
+  <p>
+  Java is constantly evolving and new releases are coming every six months.
+  <br>In <a href="https://openjdk.org/projects/loom/">project loom</a>, a lot of work has been done to introduce virtual threads in Java.  
+  <br>Virtual threads was shown to significantly reduce the execution time of large simulations.
+  <br>One of the included sample programs,
+       <a href="https://github.com/portablesimula/SimulaCompiler2/blob/main/CompilerTests/src/simulaTestPrograms/samples/PrimeUnder.sim">PrimeUnder</a>,
+      shows this clearly. You may run it
+  <br>with up to 1 million processes on an ordinary PC or MAC.
 
 
 <h2> How to Download Simula</h2>
@@ -22,21 +34,16 @@
   Before you can download, make sure that Java is installed on your computer.
   <br>
   Open source Java may be downloaded from this page: <a href="https://jdk.java.net/">Download Java OpenJDK</a>
-  <p>
-  Java is constantly evolving and new releases are coming every six months.
-  <br>In <a href="https://openjdk.org/projects/loom/">project loom</a>, a lot of work has been done to introduce virtual threads in Java.  
-  <br>Virtual threads was shown to significantly reduce the execution time of large simulations.
-  <br>One of the included sample programs,
-      <a href="https://github.com/portablesimula/SimulaCompiler/blob/master/Simula/src/simulaTestPrograms/samples/PrimeUnder.sim">PrimeUnder</a>,
-      shows this clearly. You may run it
-  <br>with up to 1 million processes on an ordinary PC or MAC.
   
-  <p>Currently you need <a href="https://jdk.java.net/21/">Jdk 21</a> to download and run Simula.
+  <p>Currently you need <a href="https://jdk.java.net/24/">Jdk 24</a> or higher to download and run Simula.
     <ul>
        <h4><a href="setup/setup.jar">Simula Download</a></h4>
-   </ul>   
-   NOTE: If setup does not start automatically try run it manually.
-   <br> Use the command: <I>java -jar setup.jar</I>
+   </ul> 
+
+ <br> Consult <a href="doc/SimulaPRM.pdf">Simula Programmer's Reference Manual</a> during this process.  
+ <br>    
+ <br> NOTE: If setup does not start automatically try run it manually.
+ <br> Use the command: <I>java -jar setup.jar</I>
    
 </p>
 <h2> Simula Documents</h2>
