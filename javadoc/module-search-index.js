@@ -1,1 +1,1 @@
-moduleSearchIndex = [{"l":"Simula"}];updateSearchResults();
+moduleSearchIndex = [];updateSearchResults();
