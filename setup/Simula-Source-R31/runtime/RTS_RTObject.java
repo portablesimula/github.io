@@ -458,6 +458,10 @@ public abstract class RTS_RTObject {
 		case terminatingProcess -> {
 			if (RTS_Option.BLOCK_TRACING)
 				RTS_UTIL.TRACE("TERMINATING PROCESS " + edObjectAttributes());
+			else if(RTS_Option.SML_TRACING) {
+				IO.println("          TERMINATING PROCESS " + edObjectIdent());
+			}
+			
 			_STATE = OperationalState.terminated;
 			_CORUT = null; // Leave it to the GarbageCollector
 			return; // Let this Continuation R.I.P.

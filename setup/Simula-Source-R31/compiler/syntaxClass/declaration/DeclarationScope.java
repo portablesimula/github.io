@@ -277,7 +277,6 @@ public abstract class DeclarationScope extends Declaration  {
 		}
 		return(withFollowSL);
 	}
-
 	
 
 	// ***********************************************************************************************

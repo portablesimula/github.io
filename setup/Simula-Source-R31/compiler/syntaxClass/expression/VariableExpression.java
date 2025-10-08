@@ -22,7 +22,6 @@ import simula.compiler.syntaxClass.ProcedureSpecification;
 import simula.compiler.syntaxClass.SyntaxClass;
 import simula.compiler.syntaxClass.Type;
 import simula.compiler.syntaxClass.declaration.ArrayDeclaration;
-import simula.compiler.syntaxClass.declaration.BlockDeclaration;
 import simula.compiler.syntaxClass.declaration.ClassDeclaration;
 import simula.compiler.syntaxClass.declaration.ConnectionBlock;
 import simula.compiler.syntaxClass.declaration.Declaration;
@@ -866,7 +865,7 @@ public final class VariableExpression extends Expression {
 				} else {
 					if (destination) Util.IERR();
 					ClassDesc owner = (inspectedVariable == null)
-							? BlockDeclaration.currentClassDesc()
+							? par.declaredIn.getClassDesc()
 									: inspectedVariable.type.getQual().getClassDesc();
 					codeBuilder.getfield(owner, par.getFieldIdentifier(), RTS.CD.RTS_ARRAY);
 				}

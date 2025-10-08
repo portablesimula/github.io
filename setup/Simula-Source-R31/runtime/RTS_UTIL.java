@@ -5,16 +5,8 @@
 /// page: https://creativecommons.org/licenses/by/4.0/
 package simula.runtime;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import javax.swing.JOptionPane;
 

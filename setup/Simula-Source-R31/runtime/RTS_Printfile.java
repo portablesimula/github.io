@@ -71,6 +71,7 @@ import java.util.StringTokenizer;
 public class RTS_Printfile extends RTS_Outfile {
 
 	/// Indicates this Printfile is Sysout.
+	@SuppressWarnings("unused")
 	private boolean isSysout;
 
 	/// The default LINES_PER_PAGE = 66

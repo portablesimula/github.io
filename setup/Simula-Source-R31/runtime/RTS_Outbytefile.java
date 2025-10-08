@@ -11,8 +11,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import simula.runtime.RTS_File._CreateAction;
-
 /// System class Outbytefile.
 /// 
 /// <pre>

@@ -90,7 +90,8 @@ public final class SimulaCompiler {
 		Global.sourceFileName = inputFile.getName();
 		Global.sourceName = Util.getBaseName(inputFile.getName());
 		Global.sourceFileDir = inputFile.getParentFile();
-
+		if(Global.sourceFileDir == null) Global.sourceFileDir = new File(System.getProperty("user.dir"));
+		
 		if (Option.internal.TRACING)
 			Util.println("Compiling: \"" + inputFileName + "\"");
 
@@ -313,6 +314,14 @@ public final class SimulaCompiler {
 			throw new RuntimeException(msg);
 		}
 
+		if (Option.verbose)
+			fileSummary();
+		if (Option.internal.DEBUGGING) {
+			Util.println("------------  CLASSPATH DETAILS  ------------");
+			Util.println("Java PathSeparator " + System.getProperty("path.separator"));
+			Util.println("Java ClassPath     " + System.getProperty("java.class.path"));
+		}
+
 		if(Option.compilerMode == Option.CompilerMode.viaJavaSource) {
 			// ***************************************************************
 			// *** CALL JAVA COMPILER
@@ -421,15 +430,6 @@ public final class SimulaCompiler {
 	/// @throws IOException if something went wrong.
 	private void doCallJavaCompiler() throws IOException {
 		String classPath = Global.simulaRtsLib.toString();
-
-		if (Option.verbose)
-			fileSummary();
-		if (Option.internal.DEBUGGING) {
-			Util.println("------------  CLASSPATH DETAILS  ------------");
-			Util.println("Java PathSeparator " + System.getProperty("path.separator"));
-			Util.println("Java ClassPath     " + System.getProperty("java.class.path"));
-		}
-
 		File rtsLib = new File(Global.simulaRtsLib, "simula/runtime");
 		boolean rtsExist = rtsLib.exists();
 		boolean rtsCread = rtsLib.canRead();
@@ -594,13 +594,13 @@ public final class SimulaCompiler {
 		Util.println("------------  FILE SUMMARY  ------------");
 		Util.println("Package Name:    \"" + Global.packetName + "\"");
 		Util.println("SourceFile Name: \"" + Global.sourceName + "\"");
-		Util.println("SourceFile Dir:  \"" + Global.sourceFileDir.getAbsolutePath() + "\"");
+		Util.println("SourceFile Dir:  \"" + Global.sourceFileDir + "\"");
 		if (Global.currentWorkspace != null)
-			Util.println("CurrentWorkspace \"" + Global.currentWorkspace.getAbsolutePath() + "\"");
-		Util.println("TempDir .java:   \"" + Global.tempJavaFileDir.getAbsolutePath() + "\"");
-		Util.println("TempDir .class:  \"" + Global.tempClassFileDir.getAbsolutePath() + "\"");
-		Util.println("SimulaRtsLib:    \"" + Global.simulaRtsLib.getAbsolutePath() + "\"");
-		Util.println("OutputDir:       \"" + Global.outputDir.getAbsolutePath() + "\"");
+			Util.println("CurrentWorkspace \"" + Global.currentWorkspace + "\"");
+		Util.println("TempDir .java:   \"" + Global.tempJavaFileDir + "\"");
+		Util.println("TempDir .class:  \"" + Global.tempClassFileDir + "\"");
+		Util.println("SimulaRtsLib:    \"" + Global.simulaRtsLib + "\"");
+		Util.println("OutputDir:       \"" + Global.outputDir + "\"");
 	}
 
 	// ***************************************************************

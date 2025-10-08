@@ -161,7 +161,7 @@ public class RTS_Simulation extends RTS_Simset {
 	/// </pre>
 	/// @param time holding time
 	public void hold(double time) {
-		SIM_TRACE("Hold " + time);
+//		SIM_TRACE("Hold " + time);
 		RTS_Process x = current();
 		if (time > 0) {
 			time = x.evtime() + time;
@@ -169,10 +169,12 @@ public class RTS_Simulation extends RTS_Simset {
 		} else
 			time = x.evtime();
 
+		SIM_TRACE("Hold " + time);
 		RTS_Ranking suc = RTS_Ranking.SUC(x.EVENT);
 		if (suc != null) {
 			if (suc.rnk <= time) {
 				RTS_Ranking.INTO(x.EVENT, sqs, time);
+				SIM_TRACE("Hold " + time);
 				// simblk.cur:=suc;
 				resume(current());
 			}
@@ -202,11 +204,12 @@ public class RTS_Simulation extends RTS_Simset {
 	/// @return next Process
 	RTS_Process passivate1() { // Used directly by Process_.TERMINATE
 		RTS_Process cur = current();
-		SIM_TRACE("Passivate " + cur.edObjectIdent());
+//		SIM_TRACE("Passivate " + cur.edObjectIdent());
 		if (cur != null) {
 			RTS_Ranking.OUT(cur.EVENT);
 			cur.EVENT = null;
 		}
+		SIM_TRACE("Passivate " + cur.edObjectIdent());
 		if (RTS_Ranking.EMPTY(sqs))
 			throw new RTS_SimulaRuntimeError("Cancel,Passivate or Wait empties SQS");
 
@@ -222,9 +225,10 @@ public class RTS_Simulation extends RTS_Simset {
 	/// </pre>
 	/// @param S the head of the set
 	public void wait(final RTS_Head S) {
-		SIM_TRACE("Wait in Queue " + S);
+//		SIM_TRACE("Wait in Queue " + S);
 		current().into(S);
 		passivate();
+		SIM_TRACE("Wait in Queue " + S);
 	}
 
 	/// The Procedure cancel.
@@ -242,12 +246,13 @@ public class RTS_Simulation extends RTS_Simset {
 	/// </pre>
 	/// @param x the argument process
 	public void cancel(final RTS_Process x) {
-		SIM_TRACE("Cancel " + x);
+//		SIM_TRACE("Cancel " + x);
 		if (x == current())
 			passivate();
 		else if (x != null && x.EVENT != null) {
 			RTS_Ranking.OUT(x.EVENT);
 			x.EVENT = null;
+			SIM_TRACE("Cancel " + x);
 		}
 	}
 
@@ -282,23 +287,31 @@ public class RTS_Simulation extends RTS_Simset {
 		if (X == null)
 			TRACE_ACTIVATE(REAC, "none");
 		else if (X._STATE == OperationalState.terminated)
-			TRACE_ACTIVATE(REAC, "terminated process");
+			TRACE_ACTIVATE(REAC, "terminated process " + X.edObjectIdent());
 		else if (X.EVENT != null && !REAC)
-			TRACE_ACTIVATE(REAC, "scheduled process");
+			TRACE_ACTIVATE(REAC, "scheduled process " + X.edObjectIdent());
 		else {
-			TRACE_ACTIVATE(REAC, X.edObjectIdent());
-			RTS_Process z;
+//			TRACE_ACTIVATE(REAC, X.edObjectIdent());
 			RTS_EVENT_NOTICE EV = null;
 			if (REAC)
 				EV = X.EVENT;
 			else if (X.EVENT != null)
 				return;
-			z = current();
+			RTS_Process prevCurrent = current();
 			X.EVENT = new RTS_EVENT_NOTICE(time(), X);
-			// X.EVENT.precede(FIRSTEV());
-			RTS_Ranking.INTO(X.EVENT, sqs, X.EVENT.rnk);
+			
+			boolean TESTING = true; // TODO: Rydd før R31
+			if(TESTING) {
+				// X.EVENT.precede(FIRSTEV());
+				RTS_Ranking.PRECEDE(X.EVENT, RTS_Ranking.FIRST(sqs));
+			} else {
+				// X.EVENT.precede(FIRSTEV());
+				RTS_Ranking.INTO(X.EVENT, sqs, X.EVENT.rnk);
+			}
+			
 			removeEvent(EV);
-			if (z != current())
+			TRACE_ACTIVATE(REAC, X.edObjectIdent());
+			if (prevCurrent != current())
 				resume(current());
 		}
 	}
@@ -333,18 +346,17 @@ public class RTS_Simulation extends RTS_Simset {
 		if (X == null)
 			TRACE_ACTIVATE(REAC, "none");
 		else if (X._STATE == OperationalState.terminated)
-			TRACE_ACTIVATE(REAC, "terminated process");
+			TRACE_ACTIVATE(REAC, "terminated process " + X.edObjectIdent());
 		else if (X.EVENT != null && !REAC)
-			TRACE_ACTIVATE(REAC, "scheduled process");
+			TRACE_ACTIVATE(REAC, "scheduled process " + X.edObjectIdent());
 		else {
-			TRACE_ACTIVATE(REAC, X.edObjectIdent() + " at " + T + ((PRIO) ? "prior" : ""));
-			RTS_Process z;
+//			TRACE_ACTIVATE(REAC, X.edObjectIdent() + " at " + T + ((PRIO) ? "prior" : ""));
 			RTS_EVENT_NOTICE EV = null;
 			if (REAC)
 				EV = X.EVENT;
 			else if (X.EVENT != null)
 				return;
-			z = current();
+			RTS_Process prevCurrent = current();
 			if (T < time())
 				T = time();
 			X.EVENT = new RTS_EVENT_NOTICE(T, X);
@@ -353,7 +365,8 @@ public class RTS_Simulation extends RTS_Simset {
 			else
 				RTS_Ranking.INTO(X.EVENT, sqs, T);
 			removeEvent(EV);
-			if (z != current())
+			TRACE_ACTIVATE(REAC, X.edObjectIdent() + " at " + T + ((PRIO) ? "prior" : ""));
+			if (prevCurrent != current())
 				resume(current());
 		}
 	}
@@ -383,20 +396,19 @@ public class RTS_Simulation extends RTS_Simset {
 		if (X == null)
 			TRACE_ACTIVATE(REAC, " none");
 		else if (X._STATE == OperationalState.terminated)
-			TRACE_ACTIVATE(REAC, " terminated process");
+			TRACE_ACTIVATE(REAC, " terminated process " + X.edObjectIdent());
 		else if (X.EVENT != null && !REAC)
-			TRACE_ACTIVATE(REAC, " scheduled process");
+			TRACE_ACTIVATE(REAC, " scheduled process " + X.edObjectIdent());
 		else if (X == Y)
-			TRACE_ACTIVATE(REAC, " before/after itself");
+			TRACE_ACTIVATE(REAC, " before/after itself " + X.edObjectIdent());
 		else {
-			TRACE_ACTIVATE(REAC, X.edObjectIdent() + ((BEFORE) ? " BEFORE " : " AFTER ") + Y.edObjectIdent());
-			RTS_Process z;
+//			TRACE_ACTIVATE(REAC, X.edObjectIdent() + ((BEFORE) ? " BEFORE " : " AFTER ") + Y.edObjectIdent());
 			RTS_EVENT_NOTICE EV = null;
 			if (REAC)
 				EV = X.EVENT;
 			else if (X.EVENT != null)
 				return;
-			z = current();
+			RTS_Process prevCurrent = current();
 			if (Y == null || Y.EVENT == null)
 				X.EVENT = null;
 			else {
@@ -410,12 +422,13 @@ public class RTS_Simulation extends RTS_Simset {
 					RTS_Ranking.PRECEDE(X.EVENT, Y.EVENT);
 			}
 			removeEvent(EV);
-			if (z != current()) {
+			TRACE_ACTIVATE(REAC, X.edObjectIdent() + ((BEFORE) ? " BEFORE " : " AFTER ") + Y.edObjectIdent());
+			if (prevCurrent != current()) {
 				RTS_Process nxtcur = current();
 				SIM_TRACE("END ACTIVATE3 Resume[" + nxtcur.edObjectIdent() + ']');
 				resume(nxtcur);
 			} else
-				SIM_TRACE("END ACTIVATE3 Continue[" + z.edObjectIdent() + ']');
+				SIM_TRACE("END ACTIVATE3 Continue[" + prevCurrent.edObjectIdent() + ']');
 
 		}
 	}
@@ -434,11 +447,41 @@ public class RTS_Simulation extends RTS_Simset {
 
 	/// Utility: Trace Simulation event
 	/// @param msg the event message
-	private void SIM_TRACE(final String msg) {
+	void SIM_TRACE(final String msg) {
 		if (RTS_Option.SML_TRACING) {
-			Thread thread = Thread.currentThread();
-			RTS_UTIL.println(thread.toString() + ": Time=" + time() + "  " + msg + ", SQS=" + sqs);
+			RTS_UTIL.println("Time=" + time() + "  " + msg + "  SQS: Current=" + ED_SQS());
 		}
+	}
+
+//	/// Utility: Trace Simulation event
+//	/// @param msg the event message
+//	private void DUMP_SQS(final String msg) {
+//		if (RTS_Option.SML_TRACING) {
+//			Object first = RTS_Ranking.FIRST(sqs);
+//			IO.println("RTS_Simulation.SIM_TRACE: sqs.first="+first.getClass().getSimpleName());
+//			RTS_EVENT_NOTICE n = (RTS_EVENT_NOTICE) first;
+//			IO.println("RTS_Simulation.SIM_TRACE: sqs.first="+n);
+//			
+//			IO.println("RTS_Simulation.SIM_TRACE: SQS: " + msg);
+//			while(n != null) {
+//				IO.println("RTS_Simulation.SIM_TRACE: "+n);
+//				n = (RTS_EVENT_NOTICE) RTS_Ranking.SUC(n);
+//			}
+//		}
+//	}
+
+	/// Utility: Edit SQS
+	/// @return edited SQS
+	private String ED_SQS() {
+		StringBuilder sb = new StringBuilder();
+		RTS_EVENT_NOTICE n = (RTS_EVENT_NOTICE) RTS_Ranking.FIRST(sqs);;
+		String sep = "";
+		while(n != null) {
+			sb.append(sep).append(n.PROC.edObjectIdent()).append('(').append(n.rnk).append(")");
+			n = (RTS_EVENT_NOTICE) RTS_Ranking.SUC(n);
+			sep = ",";
+		}
+		return sb.toString();
 	}
 
 	@Override
