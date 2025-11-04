@@ -3,9 +3,12 @@ bec.compileTimeStack
 bec.descriptor
 bec.inlineTest
 bec.instruction
-bec.segment
+bec.scode
 bec.statement
 bec.util
-bec.value
-bec.virtualMachine
-bec.virtualMachine.sysrut
+svm
+svm.env
+svm.instruction
+svm.rts
+svm.segment
+svm.value
