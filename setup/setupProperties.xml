@@ -3,9 +3,9 @@
 <properties>
 <comment>Setup Properties</comment>
 <entry key="simula.version">Simula-2.0</entry>
-<entry key="simula.revision">33</entry>
+<entry key="simula.revision">34</entry>
 <entry key="sPort.setup.dated">Mon Nov 10 08:29:09 CET 2025</entry>
 <entry key="sPort.version">SPort-1.0</entry>
-<entry key="simula.setup.dated">Wed Dec 03 08:16:17 CET 2025</entry>
+<entry key="simula.setup.dated">Sat Feb 07 09:58:38 CET 2026</entry>
 <entry key="sPort.revision">3</entry>
 </properties>
